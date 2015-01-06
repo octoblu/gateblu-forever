@@ -4,9 +4,11 @@ node_js:
 - '0.10'
 deploy:
   provider: npm
+  skip_cleanup: true
+  clean_up: false
   email: serveradmin@octoblu.com
   api_key:
     secure: iwukTKhOl/4ld5m32p9N2f4bAf8/EeZKSIWBPn5PlPYlPpqAxHGk2KNc5IVx9nkCxWFEwjUVmAoIQmFUp792JkdkMex1DCXO0AP8vYY4L6gLEUR6mWL96j0WP5GoyZ3ZFYNn2ED/4yeqxrQLnEiWYiY4waBwq0Wapb6yic9F2Lw=
   on:
     tags: true
-    repo: octoblu/gateblu-forever
+    all_branches: true
