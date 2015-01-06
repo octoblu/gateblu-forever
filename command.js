@@ -1,7 +1,7 @@
 var fs            = require('fs');
 var debug         = require('debug')('gateblu:command');
 var Gateblu       = require('gateblu');
-var DeviceManager = require('./device-manager');
+var DeviceManager = require('./index');
 
 var CONFIG_PATH = './meshblu.json';
 var DEFAULT_OPTIONS = {
