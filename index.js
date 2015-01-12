@@ -85,7 +85,7 @@ var DeviceManager = function (config) {
         fs.mkdirp(path.join(config.tmpPath, 'node_modules'), callback);
       },
       function (callback) {
-        async.each(connectors, self.installConnector, callback);
+        async.eachSeries(connectors, self.installConnector, callback);
       }
     ], callback);
   };
