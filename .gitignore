@@ -29,3 +29,5 @@ node_modules
 
 devices/
 meshblu.json
+.npmrc
+tmp
