@@ -1,3 +1,4 @@
+var _             = require('lodash');
 var fs            = require('fs');
 var debug         = require('debug')('gateblu:command');
 var Gateblu       = require('gateblu');
@@ -20,7 +21,7 @@ var GatebluCommand = function(){
     if(!fs.existsSync(CONFIG_PATH)){
       self.saveOptions(DEFAULT_OPTIONS);
     }
-    return require(CONFIG_PATH);
+    return _.clone(require(CONFIG_PATH));
   };
 
   self.run = function(){
@@ -37,7 +38,7 @@ var GatebluCommand = function(){
     gateblu = new Gateblu(options, deviceManager);
     gateblu.on('gateblu:config', self.saveOptions);
 
-    process.on('exit',              function(error){
+    process.on('exit', function(error){
       console.error(error.message, error.stack);
       debug('exit', error);
       gateblu.cleanup();
@@ -55,9 +56,9 @@ var GatebluCommand = function(){
   };
 
   self.saveOptions = function(options){
-    var optionsJSON = JSON.stringify(options, null, 2);
-    fs.writeFileSync(CONFIG_PATH, optionsJSON);
-    debug("saveOptions", "\n", optionsJSON);
+    var newOptions = _.extend({}, options, self.getOptions());
+    fs.writeFileSync(CONFIG_PATH, JSON.stringify(newOptions, true, 2));
+    debug("saveOptions", "\n", newOptions);
   };
 };
 
