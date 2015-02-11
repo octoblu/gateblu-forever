@@ -21,7 +21,7 @@ var GatebluCommand = function(){
     if(!fs.existsSync(CONFIG_PATH)){
       self.saveOptions(DEFAULT_OPTIONS);
     }
-    return _.clone(require(CONFIG_PATH));
+    return _.defaults(_.clone(require(CONFIG_PATH)), DEFAULT_OPTIONS);
   };
 
   self.run = function(){
