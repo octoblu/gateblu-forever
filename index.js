@@ -120,10 +120,10 @@ var DeviceManager = function (config) {
         return;
       }
 
-      self.emit('npm:stderr', stderr);
-      self.emit('npm:stdout', stdout);
-      debug('forever stdout', stdout);
-      debug('forever stderr', stderr);
+      self.emit('npm:stderr', stderr.toString());
+      self.emit('npm:stdout', stdout.toString());
+      debug('forever stdout', stdout.toString());
+      debug('forever stderr', stderr.toString());
       callback();
     });
   };
