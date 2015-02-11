@@ -114,11 +114,14 @@ var DeviceManager = function (config) {
     exec(cmd, {cwd: cachePath}, function(error, stdout, stderr){
       if (error) {
         console.error(error);
+        self.emit('error', error);
         debug('forever error:', error);
         callback();
         return;
       }
 
+      self.emit('npm:stderr', stderr);
+      self.emit('npm:stdout', stdout);
       debug('forever stdout', stdout);
       debug('forever stderr', stderr);
       callback();
