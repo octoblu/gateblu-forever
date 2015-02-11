@@ -39,13 +39,14 @@ var GatebluCommand = function(){
     gateblu.on('gateblu:config', self.saveOptions);
 
     process.on('exit', function(error){
-      console.error(error.message, error.stack);
+      if(error){
+        console.error(error.message, error.stack);
+      }
       debug('exit', error);
       gateblu.cleanup();
     });
-    process.on('SIGINT', function(error){
-      console.error(error.message, error.stack);
-      debug('SIGINT', error);
+    process.on('SIGINT', function(){
+      debug('SIGINT');
       gateblu.cleanup();
     });
     process.on('uncaughtException', function(error){
