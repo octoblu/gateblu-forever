@@ -196,10 +196,6 @@ var DeviceManager = function (config) {
       checkFile: false
     };
 
-    if (process.platform === 'win32') {
-      delete foreverOptions.command;
-    }
-
     child = new (forever.Monitor)('command.js', foreverOptions);
 
     child.on('stderr', function(data) {
