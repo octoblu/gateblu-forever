@@ -6,11 +6,11 @@ var DeviceManager = require('./index');
 
 var CONFIG_PATH = './meshblu.json';
 var DEFAULT_OPTIONS = {
-  server:     'meshblu.octoblu.com',
-  port:       '80',
-  nodePath:   '',
-  devicePath: 'devices',
-  tmpPath:    'tmp'
+  server:     process.env.MESHBLU_SERVER      || 'meshblu.octoblu.com',
+  port:       process.env.MESHBLU_PORT        || '80',
+  nodePath:   process.env.GATEBLU_NODE_PATH   || '',
+  devicePath: process.env.GATEBLU_DEVICE_PATH || 'devices',
+  tmpPath:    process.env.GATEBLU_TMP_PATH    || 'tmp'
 };
 
 var GatebluCommand = function(){
@@ -57,9 +57,8 @@ var GatebluCommand = function(){
   };
 
   self.saveOptions = function(options){
-    var newOptions = _.extend({}, options, self.getOptions());
-    fs.writeFileSync(CONFIG_PATH, JSON.stringify(newOptions, true, 2));
-    debug("saveOptions", "\n", newOptions);
+    debug("saveOptions", "\n", options);
+    fs.writeFileSync(CONFIG_PATH, JSON.stringify(options, true, 2));
   };
 };
 
