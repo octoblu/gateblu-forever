@@ -13,7 +13,7 @@ var debug     = require('debug')('gateblu:deviceManager');
 var DeviceManager = function (config) {
   var self = this;
   var deviceProcesses = {};
-
+  var runningDevices = [];
   self.refreshDevices = function (devices, callback) {
     debug('refreshDevices', _.pluck(devices, 'uuid'));
     callback = callback || _.noop;
@@ -25,16 +25,28 @@ var DeviceManager = function (config) {
 
       devices = _.compact(devices);
 
-      var uuidsToStop = _.difference(_.keys(deviceProcesses), _.pluck(devices, 'uuid'));
-      _.each(uuidsToStop, self.stopDevice);
+      debug('devices:', devices);
+      debug('runningDevices:', runningDevices);
 
-      var newDevices = _.reject(devices, function(device){
-        return deviceProcesses[device.uuid];
+      var devicesToStop = _.reject(runningDevices, function(device){
+        return _.findWhere(devices, {uuid: device.uuid, token: device.token});
       });
 
-      newDevices = _.compact(newDevices);
-      self.emit('update', devices);
-      self.installDevices(newDevices, callback);
+      debug('devicesToStop:', devicesToStop);
+
+      var devicesToStart = _.reject(devices, function(device){
+        return _.findWhere(runningDevices, {uuid: device.uuid, token: device.token});
+      });
+
+      debug('devicesToStart:', devicesToStart);
+
+      runningDevices = devices;
+
+      async.each( _.pluck(devicesToStop, 'uuid'), self.stopDevice, function(error){
+        self.emit('update', devices);
+        self.installDevices(devicesToStart, callback);
+      });
+
     });
   };
 
@@ -51,8 +63,9 @@ var DeviceManager = function (config) {
     debug('requesting device', deviceUrl);
     request({url: deviceUrl, headers: authHeaders, json: true}, function (error, response, body) {
       if (error || response.statusCode !== 200) {
-        debug('device does not exist', deviceUrl);
-        return callback(error, null);
+        debug('error', body.error);
+        debug('Error retrieving device', 'url:', deviceUrl, 'uuid:', device.uuid, 'token:', device.token);
+        return callback(new Error('error retrieving devices'), null);
       }
       debug('device exists', deviceUrl);
       callback(null, _.extend(body.devices[0], device));
@@ -143,7 +156,8 @@ var DeviceManager = function (config) {
 
   self.setupDevice = function (device, callback) {
     callback = callback || _.noop;
-    debug('setupDevice', device.uuid);
+    debug('setupDevice', device.uuid, device.token);
+    debug('path', config.devicePath, device.uuid);
     var connectorPath, deviceConfig, devicePath, cachePath, meshbluConfig, meshbluFilename;
     try {
       devicePath = path.join(config.devicePath, device.uuid);
@@ -222,18 +236,22 @@ var DeviceManager = function (config) {
     debug('stopDevice', uuid);
 
     if (!deviceProcess) {
+      debug('couldn\'t find device process');
       return callback(null, uuid);
     }
 
     deviceProcess.on('stop', function() {
+      debug('process for ' + uuid + ' stopped.');
       delete deviceProcesses[uuid];
       callback(null, uuid);
     });
 
     if (deviceProcess.running){
+      debug('killing process for '+ uuid);
       deviceProcess.killSignal = 'SIGINT';
       deviceProcess.kill();
     } else {
+      debug('process for ' + uuid + ' wasn\'t running. Removing record.');
       delete deviceProcesses[uuid];
       callback(null, uuid);
     }
