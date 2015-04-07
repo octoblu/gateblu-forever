@@ -20,6 +20,7 @@ var DeviceManager = function (config) {
 
     async.map(devices || [], self.deviceExists, function (error, devices) {
       if (error) {
+        console.error(error, 'Error verifying devices. Refusing to be useful');
         return callback(error);
       }
 
@@ -63,9 +64,7 @@ var DeviceManager = function (config) {
     debug('requesting device', deviceUrl);
     request({url: deviceUrl, headers: authHeaders, json: true}, function (error, response, body) {
       if (error || response.statusCode !== 200) {
-        debug('error', body.error);
-        debug('Error retrieving device', 'url:', deviceUrl, 'uuid:', device.uuid, 'token:', device.token);
-        return callback(new Error('error retrieving devices'), null);
+        return callback(error, null);
       }
       debug('device exists', deviceUrl);
       callback(null, _.extend(body.devices[0], device));
