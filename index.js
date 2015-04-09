@@ -14,6 +14,7 @@ var DeviceManager = function (config) {
   var self = this;
   var deviceProcesses = {};
   var runningDevices = [];
+
   self.refreshDevices = function (devices, callback) {
     debug('refreshDevices', _.pluck(devices, 'uuid'));
     callback = callback || _.noop;
@@ -30,23 +31,30 @@ var DeviceManager = function (config) {
       debug('runningDevices:', runningDevices);
 
       var devicesToStop = _.reject(runningDevices, function(device){
-        return _.findWhere(devices, {uuid: device.uuid, token: device.token});
+        return _.findWhere(devices, {uuid: device.uuid});
       });
 
       debug('devicesToStop:', devicesToStop);
 
       var devicesToStart = _.reject(devices, function(device){
-        return _.findWhere(runningDevices, {uuid: device.uuid, token: device.token});
+        return _.findWhere(runningDevices, {uuid: device.uuid});
       });
 
       debug('devicesToStart:', devicesToStart);
 
+      var devicesToRestart = _.filter(devices, function(device){
+        var runningDevice = _.findWhere(runningDevices, {uuid: device.uuid});
+        return runningDevice && runningDevice.token != device.token;
+      });
+
+
+      debug('devicesToRestart:', devicesToRestart);
+
       runningDevices = devices;
 
-      async.each( _.pluck(devicesToStop, 'uuid'), self.stopDevice, function(error){
-        self.emit('update', devices);
-        self.installDevices(devicesToStart, callback);
-      });
+      async.each(devicesToRestart, self.restartDevice);
+      async.each( _.pluck(devicesToStop, 'uuid'), self.stopDevice);
+      self.installDevices(devicesToStart, callback);
 
     });
   };
@@ -160,19 +168,18 @@ var DeviceManager = function (config) {
     var connectorPath, deviceConfig, devicePath, cachePath, meshbluConfig, meshbluFilename;
     try {
       devicePath = path.join(config.devicePath, device.uuid);
-      deviceConfig = _.extend({}, device, {server: config.server, port: config.port});
       cachePath = config.tmpPath;
       connectorPath = path.join(cachePath, 'node_modules', device.connector);
-      meshbluFilename = path.join(devicePath, 'meshblu.json');
-      meshbluConfig = JSON.stringify(deviceConfig, null, 2);
       debug('copying files', devicePath);
       rimraf.sync(devicePath);
       fs.copySync(connectorPath, devicePath);
-      fs.writeFileSync(meshbluFilename, meshbluConfig);
+
+      self.writeMeshbluJSON(device);
 
       _.defer(function () {
         callback();
       });
+
     } catch (error) {
       if (error) {
         console.error(error);
@@ -183,6 +190,15 @@ var DeviceManager = function (config) {
         callback();
       });
     }
+  };
+
+  self.writeMeshbluJSON = function(device) {
+    var devicePath = path.join(config.devicePath, device.uuid);
+    var meshbluFilename = path.join(devicePath, 'meshblu.json');
+    var deviceConfig = _.extend({}, device, {server: config.server, port: config.port});
+    var meshbluConfig = JSON.stringify(deviceConfig, null, 2);
+    debug('copying files', devicePath);
+    fs.writeFileSync(meshbluFilename, meshbluConfig);
   };
 
   self.startDevice = function (device, callback) {
@@ -227,6 +243,16 @@ var DeviceManager = function (config) {
 
     self.emit('start', device);
     callback();
+  };
+
+  self.restartDevice = function(device, callback) {
+    self.stopDevice(device.uuid, function(error) {
+      if(error) {
+        return callback(error);
+      }
+      self.writeMeshbluJSON(device);
+      self.startDevice(device, callback);
+    });
   };
 
   self.stopDevice = function (uuid, callback) {
