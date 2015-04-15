@@ -8,6 +8,8 @@ var CONFIG_PATH = './meshblu.json';
 var DEFAULT_OPTIONS = {
   server:     process.env.MESHBLU_SERVER      || 'meshblu.octoblu.com',
   port:       process.env.MESHBLU_PORT        || '80',
+  uuid:       process.env.MESHBLU_UUID,
+  token:      process.env.MESHBLU_TOKEN,
   nodePath:   process.env.GATEBLU_NODE_PATH   || '',
   devicePath: process.env.GATEBLU_DEVICE_PATH || 'devices',
   tmpPath:    process.env.GATEBLU_TMP_PATH    || 'tmp'
