@@ -19,38 +19,38 @@ var DeviceManager = function (config) {
     debug('refreshDevices', _.pluck(devices, 'uuid'));
     callback = callback || _.noop;
 
-    async.map(devices || [], self.deviceExists, function (error, devices) {
+    async.map(devices || [], self.deviceExists, function (error, remainingDevices) {
       if (error) {
         console.error(error, 'Error verifying devices. Refusing to be useful');
         return callback(error);
       }
+      remainingDevices = _.compact(remainingDevices);
+      self.emit('update', remainingDevices);
 
-      devices = _.compact(devices);
+      self.deleteOldDirectories(_.pluck(remainingDevices, 'uuid'));
 
-      debug('devices:', devices);
+      debug('remainingDevices:', remainingDevices);
       debug('runningDevices:', runningDevices);
 
-      var devicesToStop = _.reject(runningDevices, function(device){
-        return _.findWhere(devices, {uuid: device.uuid});
-      });
-
+      var devicesToStop = _.filter(remainingDevices, {stop: true});
       debug('devicesToStop:', devicesToStop);
 
-      var devicesToStart = _.reject(devices, function(device){
-        return _.findWhere(runningDevices, {uuid: device.uuid});
+      remainingDevices = _.difference(remainingDevices, devicesToStop);
+
+      var devicesToStart = _.reject(remainingDevices, function(device){
+        return _.findWhere(runningDevices, {uuid: device.uuid, token: device.token});
       });
 
       debug('devicesToStart:', devicesToStart);
+      remainingDevices = _.difference(remainingDevices, devicesToStart);
 
-      var devicesToRestart = _.filter(devices, function(device){
-        var runningDevice = _.findWhere(runningDevices, {uuid: device.uuid});
-        return runningDevice && runningDevice.token != device.token;
+      var devicesToRestart = _.filter(remainingDevices, function(device){
+        return _.findWhere(runningDevices, {uuid: device.uuid});
       });
-
 
       debug('devicesToRestart:', devicesToRestart);
 
-      runningDevices = devices;
+      runningDevices = _.union(devicesToStart, devicesToRestart);
 
       async.each(devicesToRestart, self.restartDevice);
       async.each( _.pluck(devicesToStop, 'uuid'), self.stopDevice);
@@ -287,6 +287,18 @@ var DeviceManager = function (config) {
     debug('stopDevices');
     async.each( _.keys(deviceProcesses), self.stopDevice, callback );
   };
+
+  self.deleteOldDirectories = function(existingDeviceUuids) {
+    deviceFolders = fs.readdirSync(config.devicePath);
+    foldersToDelete = _.difference(deviceFolders, existingDeviceUuids);
+
+    _.each(foldersToDelete, function(folder){
+      self.stopDevice(folder, function() {
+        fs.removeSync(path.join(config.devicePath, folder));
+      });
+    });
+  };
+
 };
 
 util.inherits(DeviceManager, EventEmitter);
