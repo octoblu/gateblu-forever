@@ -16,10 +16,18 @@ var DeviceManager = function (config) {
   var runningDevices = [];
 
   self.refreshDevices = function (devices, callback) {
-    debug('refreshDevices', _.pluck(devices, 'uuid'));
+    debug('refreshDevices', devices);
     callback = callback || _.noop;
 
-    async.map(devices || [], self.deviceExists, function (error, remainingDevices) {
+    var devicesToRestart = _.filter(remainingDevices, function(device){
+      var restartingDevice = _.findWhere(runningDevices, {uuid: device.uuid});
+      return restartingDevice && restartingDevice.token !== device.token;
+    });
+
+    debug('devicesToRestart:', devicesToRestart);
+    var remainingDevices = _.difference(devices, devicesToRestart);
+    debug('remainingDevices', remainingDevices);
+    async.map(remainingDevices || [], self.deviceExists, function (error, remainingDevices) {
       if (error) {
         console.error(error, 'Error verifying devices. Refusing to be useful');
         return callback(error);
@@ -44,12 +52,6 @@ var DeviceManager = function (config) {
       debug('devicesToStart:', devicesToStart);
       remainingDevices = _.difference(remainingDevices, devicesToStart);
 
-      var devicesToRestart = _.filter(remainingDevices, function(device){
-        return _.findWhere(runningDevices, {uuid: device.uuid});
-      });
-
-      debug('devicesToRestart:', devicesToRestart);
-
       runningDevices = _.union(devicesToStart, devicesToRestart);
 
       async.each(devicesToRestart, self.restartDevice);
@@ -69,8 +71,9 @@ var DeviceManager = function (config) {
 
     authHeaders = {skynet_auth_uuid: device.uuid, skynet_auth_token: device.token};
     deviceUrl = 'http://' + config.server + ':' + config.port + '/devices/' + device.uuid;
-    debug('requesting device', deviceUrl);
+    debug('requesting device', deviceUrl, 'auth:', authHeaders);
     request({url: deviceUrl, headers: authHeaders, json: true}, function (error, response, body) {
+      debug('deviceExists', body);
       if (error || response.statusCode !== 200) {
         return callback(error, null);
       }

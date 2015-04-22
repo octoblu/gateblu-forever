@@ -26,7 +26,7 @@ var GatebluCommand = function(){
     return _.defaults(_.clone(require(CONFIG_PATH)), DEFAULT_OPTIONS);
   };
 
-  self.run = function(){
+  self.run = function() {
     var options = self.getOptions();
     var deviceManager = new DeviceManager({
       uuid: options.uuid,
