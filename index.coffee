@@ -17,57 +17,68 @@ class DeviceManager extends EventEmitter
   refreshDevices: (devices, callback) =>
     debug 'refreshDevices', _.pluck(devices, 'uuid')
 
-    @getDevicesByOperation devices, (devicesToStart, devicesToStop, devicesToRestart, unchangedDevices) =>
+    @getDevicesByOperation devices, ( devicesToStart
+                                      devicesToStop
+                                      devicesToRestart
+                                      devicesToDelete
+                                      unchangedDevices) =>
       connectorsToInstall = _.uniq _.pluck devicesToStart, 'connector'
 
       async.series(
         [
           (callback) => async.each connectorsToInstall, @installConnector, callback
           (callback) => async.each devicesToStop, @stopDevice, callback
+          (callback) => async.each devicesToDelete, @stopDevice, callback
+          (callback) => async.each devicesToDelete, @removeDeletedDeviceDirectory, callback
           (callback) => async.each devicesToStart, @setupDevice, callback
           (callback) => async.each devicesToStart, @startDevice, callback
           (callback) => async.each devicesToRestart, @restartDevice, callback
         ]
         (error, result)=>
-          @runningDevices = _.union devicesToStart, devicesToRestart
+          @runningDevices = _.union devicesToStart, devicesToRestart, unchangedDevices
           @emit 'update', _.union(devicesToStart, devicesToRestart, devicesToStop, unchangedDevices)
           callback error, result
       )
 
   getDevicesByOperation: (newDevices=[], callback=->) =>
     oldDevices = _.clone @runningDevices
-    debug 'getDevicesByOperation'
-    debug 'newDevices', _.pluck(newDevices, 'name')
-    debug 'oldDevices', _.pluck(oldDevices, 'name')
-
     devicesToProcess = _.clone newDevices
+    debug 'newDevices length', newDevices.length
+    debug 'getDevicesByOperation'
     async.map devicesToProcess, @deviceExists, (error, remainingDevices) =>
       return callback error if error?
 
       remainingDevices = _.compact remainingDevices
-      debug 'devices that exist', _.pluck(remainingDevices, 'name')
+      debug 'oldDevices', _.pluck(oldDevices, 'name')
+      debug 'newDevices', _.pluck(remainingDevices, 'name')
 
       devicesToStop = _.filter remainingDevices, stop: true
       debug 'devicesToStop:', _.pluck(devicesToStop, 'name')
       remainingDevices = _.difference remainingDevices, devicesToStop
 
-      devicesToStart = _.reject remainingDevices, (device) =>
-        _.findWhere oldDevices, uuid: device.uuid, token: device.token
+      devicesToDelete = _.filter oldDevices, (device) =>
+        ! _.findWhere remainingDevices, uuid: device.uuid
+
+      debug 'devicesToDelete:', _.pluck(devicesToDelete, 'name')
+      remainingDevices = _.difference remainingDevices, devicesToDelete
+
+      devicesToStart = _.filter remainingDevices, (device) =>
+        ! _.findWhere oldDevices, uuid: device.uuid
 
       debug 'devicesToStart:', _.pluck(devicesToStart, 'name')
 
       remainingDevices = _.difference remainingDevices, devicesToStart
 
       devicesToRestart = _.filter remainingDevices, (device) =>
-        deviceToRestart =_.findWhere oldDevices, uuid: device.uuid
-        return deviceToRestart?.token != device.token
+        deviceToRestart = _.findWhere oldDevices, uuid: device.uuid
+        return device.token != deviceToRestart?.token
 
       debug 'devicesToRestart:', _.pluck(devicesToRestart, 'name')
 
       unchangedDevices = _.difference remainingDevices, devicesToRestart
       debug 'unchangedDevices', _.pluck(unchangedDevices, 'name')
 
-      callback devicesToStart, devicesToStop, devicesToRestart, unchangedDevices
+      callback devicesToStart, devicesToStop, devicesToRestart, devicesToDelete, unchangedDevices
 
   deviceExists: (device, callback=->) =>
     debug 'deviceExists', device.uuid
@@ -79,15 +90,17 @@ class DeviceManager extends EventEmitter
     debug 'requesting device', deviceUrl, 'auth:', authHeaders
 
     request url: deviceUrl, headers: authHeaders, json: true, (error, response, body) =>
-      debug "deviceExists response:", body
       return callback(error, null) if error? || body.error?
       device = _.extend {}, body.devices[0], device
       debug 'device exists', device.name
       callback null, device
 
+  getDevicePath: (device) =>
+    path.join @config.devicePath, device.uuid
+
   startDevice : (device, callback=->) =>
     debug 'startDevice', { name: device.name, uuid: device.uuid}
-    devicePath = path.join @config.devicePath, device.uuid
+    devicePath = @getDevicePath device
     @writeMeshbluJSON devicePath, device
 
     pathSep = ':'
@@ -98,9 +111,9 @@ class DeviceManager extends EventEmitter
       silent: true
       options: []
       cwd: devicePath
-      logFile: devicePath + '/forever.log'
-      outFile: devicePath + '/forever.stdout'
-      errFile: devicePath + '/forever.stderr'
+      logFile: path.join devicePath, 'forever.log'
+      outFile: path.join devicePath, 'forever.stdout'
+      errFile: path.join devicePath, 'forever.stderr'
       command: 'node'
       checkFile: false
 
@@ -152,7 +165,7 @@ class DeviceManager extends EventEmitter
   setupDevice: (device, callback) =>
     debug 'setupDevice', {uuid: device.uuid, name: device.name}
 
-    devicePath = path.join @config.devicePath, device.uuid
+    devicePath = @getDevicePath device
     connectorPath = path.join @config.tmpPath, 'node_modules', device.connector
 
     debug 'path', devicePath
@@ -202,6 +215,11 @@ class DeviceManager extends EventEmitter
     debug 'process for ' + uuid + ' wasn\'t running. Removing record.'
     delete @deviceProcesses[uuid]
     callback null, uuid
+
+  removeDeletedDeviceDirectory: (device, callback) =>
+    fs.remove @getDevicePath(device), (error) =>
+      console.error error if error?
+      callback()
 
   stopDevices: (callback=->) =>
     async.each @runningDevices, @stopDevice, callback
