@@ -11,21 +11,21 @@ debug = require('debug')('gateblu:deviceManager')
 
 class DeviceManager extends EventEmitter
   constructor: (@config) ->
-      @deviceProcesses = {}
-      @runningDevices = []
+    @deviceProcesses = {}
+    @runningDevices = []
 
   refreshDevices: (devices, callback) =>
     debug 'refreshDevices', _.pluck(devices, 'uuid')
 
-    @getDeviceOperations devices, @runningDevices, (devicesToStart, devicesToStop, devicesToRestart, unchangedDevices) =>
+    @getDevicesByOperation devices, (devicesToStart, devicesToStop, devicesToRestart, unchangedDevices) =>
       connectorsToInstall = _.uniq _.pluck devicesToStart, 'connector'
 
       async.series(
         [
-          (callback) => async.eachSeries connectorsToInstall, @installConnector, callback
+          (callback) => async.each connectorsToInstall, @installConnector, callback
           (callback) => async.each devicesToStop, @stopDevice, callback
-          (callback) => async.eachSeries devicesToStart, @setupDevice, callback
-          (callback) => async.eachSeries devicesToStart, @startDevice, callback
+          (callback) => async.each devicesToStart, @setupDevice, callback
+          (callback) => async.each devicesToStart, @startDevice, callback
           (callback) => async.each devicesToRestart, @restartDevice, callback
         ]
         (error, result)=>
@@ -34,14 +34,16 @@ class DeviceManager extends EventEmitter
           callback error, result
       )
 
-  getDeviceOperations: (newDevices=[], oldDevices=[], callback=->) =>
-    debug 'getDeviceOperations'
+  getDevicesByOperation: (newDevices=[], callback=->) =>
+    oldDevices = _.clone @runningDevices
+    debug 'getDevicesByOperation'
     debug 'newDevices', _.pluck(newDevices, 'name')
     debug 'oldDevices', _.pluck(oldDevices, 'name')
 
     devicesToProcess = _.clone newDevices
     async.map devicesToProcess, @deviceExists, (error, remainingDevices) =>
       return callback error if error?
+
       remainingDevices = _.compact remainingDevices
       debug 'devices that exist', _.pluck(remainingDevices, 'name')
 
@@ -50,7 +52,7 @@ class DeviceManager extends EventEmitter
       remainingDevices = _.difference remainingDevices, devicesToStop
 
       devicesToStart = _.reject remainingDevices, (device) =>
-        _.findWhere oldDevices, uuid: device.uuid
+        _.findWhere oldDevices, uuid: device.uuid, token: device.token
 
       debug 'devicesToStart:', _.pluck(devicesToStart, 'name')
 
@@ -104,12 +106,14 @@ class DeviceManager extends EventEmitter
 
     child = new (forever.Monitor)('command.js', foreverOptions)
     child.on 'stderr', (data) =>
-      debug 'stderr', device.uuid, data.toString()
-      @emit 'stderr', data.toString(), device
+      dataJSON = JSON.stringify data, null, 2
+      debug 'stderr', device.uuid, dataJSON
+      @emit 'stderr', dataJSON, device
 
     child.on 'stdout', (data) =>
-      debug 'stdout', device.uuid, data.toString()
-      @emit 'stdout', data.toString(), device
+      dataJSON = JSON.stringify data, null, 2
+      debug 'stdout', device.uuid, dataJSON
+      @emit 'stdout', dataJSON, device
 
     debug 'forever', {uuid: device.uuid, name: device.name}, 'starting'
     child.start()
@@ -179,7 +183,7 @@ class DeviceManager extends EventEmitter
       debug 'restartDevice error:', error if error?
       @startDevice device, callback
 
-  stopDevice : (device, callback=->) =>
+  stopDevice: (device, callback=->) =>
     debug 'stopDevice', device.uuid
     deviceProcess = @deviceProcesses[device.uuid]
     return callback null, device.uuid unless deviceProcess?
@@ -200,6 +204,6 @@ class DeviceManager extends EventEmitter
     callback null, uuid
 
   stopDevices: (callback=->) =>
-    async.eachSeries @runningDevices, @stopDevice, callback
+    async.each @runningDevices, @stopDevice, callback
 
 module.exports = DeviceManager
