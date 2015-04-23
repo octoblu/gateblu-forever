@@ -138,7 +138,9 @@ class DeviceManager extends EventEmitter
 
   installConnector : (connector, callback=->) =>
     debug 'installConnector', connector
-    return if @connectorsInstalled[connector]
+    if @connectorsInstalled[connector]
+      debug "installConnector: #{connector} already installed this session. skipping."
+      return callback() 
 
     nodeModulesDir = path.join @config.tmpPath, 'node_modules'
     fs.mkdirpSync nodeModulesDir
