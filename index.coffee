@@ -121,14 +121,12 @@ class DeviceManager extends EventEmitter
 
     child = new (forever.Monitor)('command.js', foreverOptions)
     child.on 'stderr', (data) =>
-      dataJSON = JSON.stringify data, null, 2
-      debug 'stderr', device.uuid, dataJSON
-      @emit 'stderr', dataJSON, device
+      debug 'stderr', device.uuid, data.toString()
+      @emit 'stderr', data.toString(), device
 
     child.on 'stdout', (data) =>
-      dataJSON = JSON.stringify data, null, 2
-      debug 'stdout', device.uuid, dataJSON
-      @emit 'stdout', dataJSON, device
+      debug 'stdout', device.uuid, data.toString()
+      @emit 'stdout', data.toString(), device
 
     debug 'forever', {uuid: device.uuid, name: device.name}, 'starting'
     child.start()
@@ -158,10 +156,10 @@ class DeviceManager extends EventEmitter
           @emit 'stderr', error
           return callback()
 
-        @emit 'npm:stderr', stderr
-        @emit 'npm:stdout', stdout
-        debug 'npm:stdout', stdout
-        debug 'npm:stderr', stderr
+        @emit 'npm:stderr', stderr.toString()
+        @emit 'npm:stdout', stdout.toString()
+        debug 'npm:stdout', stdout.toString()
+        debug 'npm:stderr', stderr.toString()
         @connectorsInstalled[connector] = true
         callback()
     )
