@@ -147,8 +147,9 @@ class DeviceManager extends EventEmitter
     fs.mkdirpSync connectorPath
     prefix = ''
     prefix = 'cmd.exe /c ' if process.platform == 'win32'
-
-    exec("#{prefix} npm --prefix=. install #{connector}"
+    npmMethod = "install"
+    npmMethod = "update" if fs.existsSync connectorPath
+    exec("#{prefix} npm --prefix=. #{npmMethod} #{connector}"
       cwd: @config.tmpPath
       (error, stdout, stderr) =>
         if error?
