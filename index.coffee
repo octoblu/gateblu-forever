@@ -142,11 +142,11 @@ class DeviceManager extends EventEmitter
 
     nodeModulesDir = path.join @config.tmpPath, 'node_modules'
     connectorPath = path.join nodeModulesDir, connector
+    npmMethod = "install"
+    npmMethod = "update" if fs.existsSync connectorPath
     fs.mkdirpSync connectorPath
     prefix = ''
     prefix = 'cmd.exe /c ' if process.platform == 'win32'
-    npmMethod = "install"
-    npmMethod = "update" if fs.existsSync connectorPath
     exec("#{prefix} npm --prefix=. #{npmMethod} #{connector}"
       cwd: @config.tmpPath
       (error, stdout, stderr) =>
@@ -160,6 +160,7 @@ class DeviceManager extends EventEmitter
         @emit 'npm:stdout', stdout.toString()
         debug 'npm:stdout', stdout.toString()
         debug 'npm:stderr', stderr.toString()
+        debug 'connector installed', connector
         @connectorsInstalled[connector] = true
         callback()
     )
