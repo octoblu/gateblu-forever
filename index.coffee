@@ -140,15 +140,15 @@ class DeviceManager extends EventEmitter
     debug 'installConnector', connector
     if @connectorsInstalled[connector]
       debug "installConnector: #{connector} already installed this session. skipping."
-      return callback() 
+      return callback()
 
     nodeModulesDir = path.join @config.tmpPath, 'node_modules'
-    fs.mkdirpSync nodeModulesDir
     connectorPath = path.join nodeModulesDir, connector
+    fs.mkdirpSync connectorPath
     prefix = ''
     prefix = 'cmd.exe /c ' if process.platform == 'win32'
 
-    exec("#{prefix} npm --prefix=. update #{connector}"
+    exec("#{prefix} npm --prefix=. install #{connector}"
       cwd: @config.tmpPath
       (error, stdout, stderr) =>
         if error?
