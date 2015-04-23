@@ -13,6 +13,7 @@ class DeviceManager extends EventEmitter
   constructor: (@config) ->
     @deviceProcesses = {}
     @runningDevices = []
+    @connectorsInstalled = {}
 
   refreshDevices: (devices, callback) =>
     debug 'refreshDevices', _.pluck(devices, 'uuid')
@@ -137,6 +138,8 @@ class DeviceManager extends EventEmitter
 
   installConnector : (connector, callback=->) =>
     debug 'installConnector', connector
+    return if @connectorsInstalled[connector]
+
     nodeModulesDir = path.join @config.tmpPath, 'node_modules'
     fs.mkdirpSync nodeModulesDir
     connectorPath = path.join nodeModulesDir, connector
@@ -152,10 +155,11 @@ class DeviceManager extends EventEmitter
           @emit 'stderr', error
           return callback()
 
-        @emit 'npm:stderr', stderr.toString()
-        @emit 'npm:stdout', stdout.toString()
-        debug 'forever stdout', stdout.toString()
-        debug 'forever stderr', stderr.toString()
+        @emit 'npm:stderr', stderr
+        @emit 'npm:stdout', stdout
+        debug 'npm:stdout', stdout
+        debug 'npm:stderr', stderr
+        @connectorsInstalled[connector] = true
         callback()
     )
 
