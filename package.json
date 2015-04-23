@@ -1,6 +1,6 @@
 {
   "name": "gateblu-forever",
-  "version": "1.4.3",
+  "version": "2.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -19,11 +19,12 @@
   "homepage": "https://github.com/octoblu/gateblu-forever",
   "dependencies": {
     "async": "~0.9.0",
+    "coffee-script": "^1.9.2",
     "debug": "^2.1.1",
     "forever": "^0.13.0",
     "forever-monitor": "~1.5.2",
     "fs-extra": "~0.13.0",
-    "gateblu": "^3.2.2",
+    "gateblu": "^4.0.0",
     "lodash": "~2.4.1",
     "request": "~2.51.0",
     "rimraf": "~2.2.8"
