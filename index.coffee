@@ -52,15 +52,16 @@ class DeviceManager extends EventEmitter
       debug 'oldDevices', _.pluck(oldDevices, 'name')
       debug 'newDevices', _.pluck(remainingDevices, 'name')
 
-      devicesToStop = _.filter remainingDevices, stop: true
-      debug 'devicesToStop:', _.pluck(devicesToStop, 'name')
-      remainingDevices = _.difference remainingDevices, devicesToStop
-
       devicesToDelete = _.filter oldDevices, (device) =>
         ! _.findWhere remainingDevices, uuid: device.uuid
 
       debug 'devicesToDelete:', _.pluck(devicesToDelete, 'name')
       remainingDevices = _.difference remainingDevices, devicesToDelete
+
+      devicesToStop = _.filter remainingDevices, stop: true
+      debug 'devicesToStop:', _.pluck(devicesToStop, 'name')
+
+      remainingDevices = _.difference remainingDevices, devicesToStop
 
       devicesToStart = _.filter remainingDevices, (device) =>
         ! _.findWhere oldDevices, uuid: device.uuid
