@@ -48,7 +48,6 @@ class DeviceManager extends EventEmitter
     debug 'getDevicesByOperation'
     async.map devicesToProcess, @deviceExists, (error, remainingDevices) =>
       return callback error if error?
-
       remainingDevices = _.compact remainingDevices
       debug 'oldDevices', _.pluck(oldDevices, 'name')
       debug 'newDevices', _.pluck(remainingDevices, 'name')
@@ -66,7 +65,6 @@ class DeviceManager extends EventEmitter
 
       devicesToStart = _.filter remainingDevices, (device) =>
         ! _.findWhere oldDevices, uuid: device.uuid
-
       debug 'devicesToStart:', _.pluck(devicesToStart, 'name')
 
       remainingDevices = _.difference remainingDevices, devicesToStart
@@ -92,7 +90,8 @@ class DeviceManager extends EventEmitter
     debug 'requesting device', deviceUrl, 'auth:', authHeaders
 
     request url: deviceUrl, headers: authHeaders, json: true, (error, response, body) =>
-      return callback(error, null) if error? || body.error?
+      debug 'devicesExists', body
+      return callback() if error? || body.error? || !body.devices
       device = _.extend {}, body.devices[0], device
       debug 'device exists', device.name
       callback null, device
@@ -215,9 +214,9 @@ class DeviceManager extends EventEmitter
       deviceProcess.kill()
       return
 
-    debug 'process for ' + uuid + ' wasn\'t running. Removing record.'
-    delete @deviceProcesses[uuid]
-    callback null, uuid
+    debug "process for #{device.uuid} wasn\'t running. Removing record."
+    delete @deviceProcesses[device.uuid]
+    callback null, device
 
   removeDeletedDeviceDirectory: (device, callback) =>
     fs.remove @getDevicePath(device), (error) =>
