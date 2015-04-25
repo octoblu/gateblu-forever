@@ -215,9 +215,9 @@ class DeviceManager extends EventEmitter
       deviceProcess.kill()
       return
 
-    debug 'process for ' + uuid + ' wasn\'t running. Removing record.'
-    delete @deviceProcesses[uuid]
-    callback null, uuid
+    debug "process for #{device.uuid} wasn't running. Removing record."
+    delete @deviceProcesses[device.uuid]
+    callback null, device.uuid
 
   removeDeletedDeviceDirectory: (device, callback) =>
     fs.remove @getDevicePath(device), (error) =>
