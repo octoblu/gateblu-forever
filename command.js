@@ -4,7 +4,7 @@ var debug         = require('debug')('gateblu:command');
 var Gateblu       = require('gateblu');
 var DeviceManager = require('./index');
 
-var CONFIG_PATH = './meshblu.json';
+var CONFIG_PATH = process.env.MESHBLU_JSON_FILE || './meshblu.json';
 var DEFAULT_OPTIONS = {
   server:     process.env.MESHBLU_SERVER      || 'meshblu.octoblu.com',
   port:       process.env.MESHBLU_PORT        || '80',
