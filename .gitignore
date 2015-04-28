@@ -33,3 +33,7 @@ meshblu.json
 tmp
 *.sublime-workspace
 .installer/darwin/cache
+.installer/win32-ia32/cache
+.installer/win32-x64/cache
+.installer/win32-ia32/output
+.installer/win32-ia32/directory.wxs
