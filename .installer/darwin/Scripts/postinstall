@@ -1,0 +1,4 @@
+#!/bin/sh
+ln -sf "/Library/Application Support/GatebluService/.installer/darwin/com.octoblu.GatebluService.plist" /Library/LaunchAgents
+/usr/bin/sudo -u $USER /bin/launchctl load "/Library/LaunchAgents/com.octoblu.GatebluService.plist"
+/usr/bin/sudo -u $USER /bin/launchctl start "com.octoblu.GatebluService"

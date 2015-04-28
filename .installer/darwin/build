@@ -1,0 +1,28 @@
+#!/bin/sh
+
+mkdir -p .installer/darwin/cache
+if [ ! -f .installer/darwin/cache/node.pkg ]; then
+  pushd .installer/darwin/cache
+  curl -sO https://s3-us-west-2.amazonaws.com/gateblu/node-binaries/darwin/node.pkg
+  popd
+fi
+
+if [ ! -f .installer/darwin/cache/npm.pkg ]; then
+  pushd .installer/darwin/cache
+  curl -sO https://s3-us-west-2.amazonaws.com/gateblu/node-binaries/darwin/npm.pkg
+  popd
+fi
+
+pkgbuild --root . \
+  --identifier com.octoblu.GatebluService \
+  --version 1.0 \
+  --component-plist .installer/darwin/GatebluService.plist \
+  --ownership recommended \
+  --install-location "/Library/Application Support/GatebluService" \
+  --scripts .installer/darwin/Scripts \
+  .installer/darwin/cache/GatebluService.pkg
+
+productbuild --distribution .installer/darwin/distribution.plist \
+  --resources .installer/darwin \
+  --package-path .installer/darwin/cache \
+  .installer/darwin/cache/Gateblu.pkg

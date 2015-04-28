@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.octoblu.GatebluService</string>
+    <key>EnvironmentVariables</key>
+    <dict>
+      <key>PATH</key>
+      <string>/sbin:/usr/sbin:/bin:/usr/bin:/Library/Application Support/GatebluService/node/bin</string>
+      <key>MESHBLU_JSON_FILE</key>
+      <string>/Users/octoblu/.config/gateblu/meshblu.json</string>
+      <key>DEBUG</key>
+      <string>gateblu*</string>
+    </dict>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Library/Application Support/GatebluService/node/bin/npm</string>
+        <string>start</string>
+    </array>
+    <key>KeepAlive</key>
+    <true/>
+    <key>WorkingDirectory</key>
+    <string>/Library/Application Support/GatebluService</string>
+</dict>
+</plist>

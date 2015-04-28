@@ -32,3 +32,4 @@ meshblu.json
 .npmrc
 tmp
 *.sublime-workspace
+.installer/darwin/cache
