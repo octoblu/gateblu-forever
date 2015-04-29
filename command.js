@@ -1,6 +1,7 @@
 var _             = require('lodash');
-var fs            = require('fs');
+var fs            = require('fs-extra');
 var debug         = require('debug')('gateblu:command');
+var path          = require('path');
 var Gateblu       = require('gateblu');
 var DeviceManager = require('./index');
 
@@ -60,6 +61,7 @@ var GatebluCommand = function(){
 
   self.saveOptions = function(options){
     debug("saveOptions", "\n", options);
+    fs.mkdirpSync(path.dirname(connectorPath));
     fs.writeFileSync(CONFIG_PATH, JSON.stringify(options, true, 2));
   };
 };
