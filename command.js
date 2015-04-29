@@ -61,7 +61,7 @@ var GatebluCommand = function(){
 
   self.saveOptions = function(options){
     debug("saveOptions", "\n", options);
-    fs.mkdirpSync(path.dirname(connectorPath));
+    fs.mkdirpSync(path.dirname(CONFIG_PATH));
     fs.writeFileSync(CONFIG_PATH, JSON.stringify(options, true, 2));
   };
 };

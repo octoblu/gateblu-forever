@@ -35,4 +35,4 @@ tmp
 .installer/darwin/cache
 .installer/win32-*/cache
 .installer/win32-*/output
-.installer/win32-*/directory.wxs
+.installer/win32-*/**/directory.wxs
