@@ -57,13 +57,16 @@ If (!(Test-Path $cache_dir\npm)){
 
 
 #Copy excluding .git and installer
-robocopy $script_dir\..\.. $tmp_dir /S /NFL /NDL /NS /NC /NJH /NJS /XD .git installer .installer
-mkdir $tmp_dir\node\bin
-Copy-Item "$cache_dir\node.exe" $tmp_dir\node\bin\node.exe
-Copy-Item "$cache_dir\nssm.exe" $tmp_dir\node\bin\nssm.exe
-Copy-Item "$cache_dir\npm\npm-2.6.0\bin\npm.cmd" $tmp_dir\node\bin\npm.cmd
-robocopy $cache_dir\npm\npm-2.6.0 $tmp_dir\node\bin\node_modules\npm /S /NFL /NDL /NS /NC /NJH /NJS
+robocopy $script_dir\..\.. $tmp_dir /S /NFL /NDL /NS /NC /NJH /NJS /XD .git installer .installer coverage test node_modules
+Copy-Item "$cache_dir\node.exe" $tmp_dir\node.exe
+Copy-Item "$cache_dir\nssm.exe" $tmp_dir\nssm.exe
+Copy-Item "$cache_dir\npm\npm-2.6.0\bin\npm.cmd" $tmp_dir\npm.cmd
+robocopy $cache_dir\npm\npm-2.6.0 $tmp_dir\node_modules\npm /S /NFL /NDL /NS /NC /NJH /NJS
 robocopy $script_dir\assets $tmp_dir /S /NFL /NDL /NS /NC /NJH /NJS
+
+Set-Location -Path $tmp_dir
+. $tmp_dir\npm.cmd install -s
+Set-Location -Path $script_dir\..\..
 
 #Generate the installer
 $wix_dir="C:\Program Files\WiX Toolset v3.9\bin"
@@ -77,4 +80,4 @@ $wix_dir="C:\Program Files\WiX Toolset v3.9\bin"
 #. "C:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\Bin\signtool.exe" sign /n "Auth10" .\output\installer.msi
 
 #Remove the temp
-#Remove-Item -Recurse -Force $tmp_dir
+Remove-Item -Recurse -Force $tmp_dir

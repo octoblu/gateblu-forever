@@ -5,11 +5,11 @@
   <Product Id="D87C7EDF-24E3-4509-AB1A-237E1BCBD89C"
           UpgradeCode="381835F6-B008-45AF-B062-4FF2F972AE6D"
           Language='1033' Codepage='1252' Version='1.0.0'
-          Name="MyProduct"
-          Manufacturer='MyCompany'>
+          Name="GatebluService"
+          Manufacturer='Octoblu'>
 
-    <Package Id='*' Keywords='Installer' Description="My awesome super product"
-          Comments='Blaaaa' Manufacturer='MyCompany'
+    <Package Id='*' Keywords='Installer' Description="Octoblu IOT Gateway Service"
+          Comments='Blaaaa' Manufacturer='Octoblu'
           InstallerVersion='100' Languages='1033' Compressed='yes' SummaryCodepage='1252' />
 
     <Media Id='1' EmbedCab='yes' Cabinet="main.cab" />
@@ -26,14 +26,10 @@
 
     <Directory Id='TARGETDIR' Name='SourceDir'>
       <Directory Id='ProgramFilesFolder' Name='PFiles'>
-        <Directory Id='MyCompany_Folder' Name='MyCompany'>
-          <Directory Id='INSTALLDIR' Name='MyProduct'>
+        <Directory Id='Octoblu_Folder' Name='Octoblu'>
+          <Directory Id='INSTALLDIR' Name='GatebluService'>
           </Directory>
         </Directory>
-      </Directory>
-      <Directory Id="ProgramMenuFolder">
-        <Directory Id="ApplicationProgramsFolder"
-                    Name="MyProduct"/>
       </Directory>
     </Directory>
 
@@ -45,23 +41,36 @@
     <Feature Id='Complete' Level='1'>
       <ComponentGroupRef Id='MainComponentGroup' />
       <Component Id="node_component" Guid="{AAAAAAAA-C0C2-4D3F-BC22-EC7AE4963FFF}" Directory="INSTALLDIR">
-        <File Id="node" KeyPath="yes" Source="$(var.SourceDir)\node\bin\node.exe" />
+        <File Id="node" KeyPath="yes" Source="$(var.SourceDir)\node.exe" />
       </Component>
 
       <Component Id="nssm_component" Guid="{AAAAAAAA-CBB2-4F3F-BC22-EC7AE4963FFF}" Directory="INSTALLDIR">
-        <File Id="nssm" KeyPath="yes" Source="$(var.SourceDir)\node\bin\nssm.exe" />
-
-        <ServiceControl Id="ControlMyProductService"
-                 Name="MyProduct Service"
+        <File Id="nssm" KeyPath="yes" Source="$(var.SourceDir)\nssm.exe" />
+        <Environment Id="MESHBLU_JSON_FILE"
+                         Action="set"
+                         Part="all"
+                         Name="MESHBLU_JSON_FILE"
+                         Permanent="yes"
+                         System="no"
+                         Value="%LOCALAPPDATA%\Octoblu\GatebluService\meshblu.json"/>
+        <ServiceControl Id="ControlGatebluServiceService"
+                 Name="Gateblu Service"
                  Remove="uninstall"
                  Stop="uninstall" />
+        <RegistryKey Root="HKLM" Key="System\CurrentControlSet\Services\GatebluService\Parameters" ForceCreateOnInstall="yes">
+          <RegistryValue Name="AppEnvironment" Action="append" Type="multiString">
+            <MultiStringValue Name="AppEnvironment" Action="append" Type="multiString">
+                MESHBLU_JSON_FILE=[LocalAppDataFolder]\Octoblu\GatebluService\meshblu.json
+            </MultiStringValue>
+          </RegistryValue>
+        </RegistryKey>
       </Component>
-
     </Feature>
 
     <Property Id="WIXUI_INSTALLDIR" Value="INSTALLDIR" />
 
     <UIRef Id="WixUI" />
 
+    <Property Id="REBOOT" Value="Force"></Property>
   </Product>
 </Wix>

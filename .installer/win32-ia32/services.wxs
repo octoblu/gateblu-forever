@@ -8,7 +8,7 @@
       Impersonate="no"
       Execute="deferred"
       FileKey='nssm'
-      ExeCommand='install "GatebluService" "[INSTALLDIR]\node\bin\node.exe" "\"[INSTALLDIR]\command.js\""'
+      ExeCommand='install "GatebluService" "[INSTALLDIR]\node.exe" command.js'
       Return='asyncWait' />
 
   </Fragment>
