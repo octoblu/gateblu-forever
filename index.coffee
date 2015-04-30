@@ -1,13 +1,14 @@
-util = require('util')
-{EventEmitter} = require('events')
-fs = require('fs-extra')
-path = require('path')
-forever = require('forever-monitor')
+util = require 'util'
+{EventEmitter} = require 'events'
+fs = require 'fs-extra'
+path = require 'path'
+forever = require 'forever-monitor'
 exec = require('child_process').exec
-_ = require('lodash')
-async = require('async')
-request = require('request')
+_ = require 'lodash'
+async = require 'async'
 debug = require('debug')('gateblu:deviceManager')
+url = require 'url'
+MeshbluHttp = require 'meshblu-http'
 
 class DeviceManager extends EventEmitter
   constructor: (@config) ->
@@ -23,8 +24,9 @@ class DeviceManager extends EventEmitter
                                       devicesToRestart
                                       devicesToDelete
                                       unchangedDevices) =>
-      connectorsToInstall = _.uniq _.pluck devicesToStart, 'connector'
+      connectorsToInstall = _.compact _.uniq _.pluck devicesToStart, 'connector'
 
+      debug "connectorsToInstall", connectorsToInstall
       async.series(
         [
           (callback) => async.each connectorsToInstall, @installConnector, callback
@@ -85,15 +87,17 @@ class DeviceManager extends EventEmitter
   deviceExists: (device, callback=->) =>
     debug 'deviceExists', device.uuid
 
-    authHeaders =
-      skynet_auth_uuid: device.uuid
-      skynet_auth_token: device.token
-    deviceUrl = "http://#{@config.server}:#{@config.port}/devices/#{device.uuid}"
-    debug 'requesting device', deviceUrl, 'auth:', authHeaders
+    auth =
+      uuid: device.uuid
+      token: device.token
 
-    request url: deviceUrl, headers: authHeaders, json: true, (error, response, body) =>
-      return callback(error, null) if error? || body.error?
-      device = _.extend {}, body.devices[0], device
+    httpConfig = _.extend {}, @config, auth
+    meshbluHttp = new MeshbluHttp httpConfig
+    debug 'meshbluHttp', httpConfig
+    meshbluHttp.device device.uuid, (error, meshbluDevice) =>
+      debug 'meshbluHttp response', error, meshbluDevice
+      return callback error if error?
+      device = _.extend {}, meshbluDevice, device
       debug 'device exists', device.name
       callback null, device
 
@@ -136,6 +140,9 @@ class DeviceManager extends EventEmitter
 
   installConnector : (connector, callback=->) =>
     debug 'installConnector', connector
+    if _.isEmpty(connector)
+      return callback()
+
     if @connectorsInstalled[connector]
       debug "installConnector: #{connector} already installed this session. skipping."
       return callback()
