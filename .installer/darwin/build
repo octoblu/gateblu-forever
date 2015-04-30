@@ -19,7 +19,7 @@ if [ ! -f $CACHE_DIR/npm.pkg ]; then
 fi
 
 sudo rm -rf $OUTPUT_DIR
-rsync -avq --exclude='test' --exclude='.git' --exclude='.installer' $ROOT_DIR/ $OUTPUT_DIR
+rsync -avq --exclude='node_modules' --exclude='meshblu.json' --exclude='test' --exclude='.git' --exclude='.installer' $ROOT_DIR/ $OUTPUT_DIR
 cp $INSTALLER_DIR/com.octoblu.GatebluService.plist $INSTALLER_DIR/start-gateblu-service $OUTPUT_DIR
 pushd $OUTPUT_DIR
 npm install -s --production
