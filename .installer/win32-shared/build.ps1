@@ -49,7 +49,7 @@ If (!(Test-Path $cache_dir)){
 @(
     'node.exe'
     'npm-2.6.0.zip'
-    'nssm.exe'
+    'GatebluServiceTray.exe'
 ) |
 Where-Object { (!(Test-Path $cache_dir\$_)) } |
 ForEach-Object {

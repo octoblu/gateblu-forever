@@ -20,9 +20,8 @@
 
     <Icon Id="icon.ico" SourceFile="$(var.SourceDir)\images\gateblu.ico"/>
     <Property Id="ARPPRODUCTICON" Value="icon.ico" />
-
-
     <Property Id="MSIUSEREALADMINDETECTION" Value="1" />
+    <Property Id="ASSISTANCE_START_VIA_REGISTRY">1</Property>
 
     <Directory Id='TARGETDIR' Name='SourceDir'>
       <Directory Id='ProgramFilesFolder' Name='PFiles'>
@@ -32,11 +31,6 @@
         </Directory>
       </Directory>
     </Directory>
-
-    <!--<InstallExecuteSequence>
-      <Custom Action='RegisterGatebluService'
-              Before='StartServices'>NOT Installed</Custom>
-    </InstallExecuteSequence>-->
 
     <Feature Id='Complete' Level='1'>
       <ComponentGroupRef Id='MainComponentGroup' />
@@ -64,20 +58,19 @@
                  System="no"
                  Value="%LOCALAPPDATA%\Octoblu\GatebluService\tmp"/>
       </Component>
-      <!-- <Component Id="nssm_component" Guid="{AAAAAAAA-CBB2-4F3F-BC22-EC7AE4963FFF}" Directory="INSTALLDIR">
-        <File Id="nssm" KeyPath="yes" Source="$(var.CacheDir)\nssm.exe" />
-        <ServiceControl Id="ControlGatebluServiceService"
-                 Name="Gateblu Service"
-                 Remove="uninstall"
-                 Stop="uninstall" />
-        <RegistryKey Root="HKLM" Key="System\CurrentControlSet\Services\GatebluService\Parameters" ForceCreateOnInstall="yes">
-          <RegistryValue Name="AppEnvironment" Action="append" Type="multiString">
-            <MultiStringValue Name="AppEnvironment" Action="append" Type="multiString">
-                MESHBLU_JSON_FILE=[LocalAppDataFolder]\Octoblu\GatebluService\meshblu.json
-            </MultiStringValue>
-          </RegistryValue>
-        </RegistryKey>
-      </Component> -->
+      <Component Id="gatebluservicetray_component" Guid="{AAAAAAAA-CDD2-4D3F-BC22-EC7AE4963FFF}" Directory="INSTALLDIR">
+        <File Id="gatebluservicetray" KeyPath="yes" Source="$(var.CacheDir)\GatebluServiceTray.exe" />
+      </Component>
+      <Component Id="GatebluServiceAutostart" Guid="45730905-EAFD-4653-9674-30972861595C" Directory="INSTALLDIR">
+        <RegistryValue Id="GatebluService.rst" Root="HKMU" Action="write"
+                       Key="Software\Microsoft\Windows\CurrentVersion\Run"
+                       Name="GatebluService"
+                       Value="[INSTALLDIR]GatebluServiceTray.exe"
+                       Type="string" />
+        <Condition>ASSISTANCE_START_VIA_REGISTRY</Condition>
+      </Component>
+
+      <ComponentRef Id="GatebluServiceAutostart" />
     </Feature>
 
     <Property Id="WIXUI_INSTALLDIR" Value="INSTALLDIR" />
