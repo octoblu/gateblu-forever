@@ -27,8 +27,13 @@ $tmp_dir = [io.path]::GetTempFileName()
 $wix_template_dir = "$shared_dir\wix"
 $wix_dir="C:\Program Files\WiX Toolset v3.9\bin"
 
-If ($platform -eq 'win32-x64') {
+if (!(Test-Path $wix_dir)) {
   $wix_dir="C:\Program Files (x86)\WiX Toolset v3.9\bin"
+}
+
+if (!(Test-Path $wix_dir)) {
+  echo "NO WIX INSTALLATION FOUND"
+  exit 1
 }
 
 @(
