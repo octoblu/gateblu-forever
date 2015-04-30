@@ -20,7 +20,7 @@
     <choice id="com.octoblu.GatebluService" visible="false">
         <pkg-ref id="com.octoblu.GatebluService"/>
     </choice>
-    <pkg-ref id="com.octoblu.GatebluService" version="1.0" onConclusion="none">GatebluService.pkg</pkg-ref>
+    <pkg-ref id="com.octoblu.GatebluService" version="1.0" onConclusion="none">GatebluServiceCore.pkg</pkg-ref>
     <choice id="org.nodejs.pkg" visible="false">
         <pkg-ref id="org.nodejs.pkg"/>
     </choice>

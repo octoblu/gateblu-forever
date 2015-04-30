@@ -7,7 +7,7 @@ var DeviceManager = require('./index');
 
 var CONFIG_PATH = process.env.MESHBLU_JSON_FILE || './meshblu.json';
 var DEFAULT_OPTIONS = {
-  server:     process.env.MESHBLU_SERVER      || 'meshblu.octoblu.com',
+  server:     process.env.MESHBLU_SERVER      || 'wss://meshblu.octoblu.com',
   port:       process.env.MESHBLU_PORT        || '443',
   uuid:       process.env.MESHBLU_UUID,
   token:      process.env.MESHBLU_TOKEN,

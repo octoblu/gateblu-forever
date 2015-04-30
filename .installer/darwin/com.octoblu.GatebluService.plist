@@ -8,16 +8,17 @@
     <dict>
       <key>PATH</key>
       <string>/sbin:/usr/sbin:/bin:/usr/bin:/Library/Application Support/GatebluService/node/bin</string>
-      <key>MESHBLU_JSON_FILE</key>
-      <string>$HOME/Library/Application Support/GatebluService/meshblu.json</string>
     </dict>
     <key>ProgramArguments</key>
     <array>
-        <string>/Library/Application Support/GatebluService/node/bin/npm</string>
-        <string>start</string>
+      <string>/Library/Application Support/GatebluService/start-gateblu-service</string>
     </array>
     <key>KeepAlive</key>
     <true/>
+    <key>StandardOutPath</key>
+    <string>/Users/octoblu/gateblu.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/octoblu/gateblu-error.log</string>
     <key>WorkingDirectory</key>
     <string>/Library/Application Support/GatebluService</string>
 </dict>

@@ -86,7 +86,7 @@ Copy-Item $cache_dir\npm.cmd $tmp_dir\npm.cmd
 
 echo "Installing node_modules..."
 Set-Location -Path $tmp_dir
-. "$cache_dir\npm.cmd" install -s
+. "$cache_dir\npm.cmd" install -s --production
 Set-Location -Path $script_dir\..\..
 
 #Generate the installer
