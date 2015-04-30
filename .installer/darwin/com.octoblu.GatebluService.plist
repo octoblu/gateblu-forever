@@ -9,9 +9,7 @@
       <key>PATH</key>
       <string>/sbin:/usr/sbin:/bin:/usr/bin:/Library/Application Support/GatebluService/node/bin</string>
       <key>MESHBLU_JSON_FILE</key>
-      <string>/Users/octoblu/.config/gateblu/meshblu.json</string>
-      <key>DEBUG</key>
-      <string>gateblu*</string>
+      <string>$HOME/Library/Application Support/GatebluService/meshblu.json</string>
     </dict>
     <key>ProgramArguments</key>
     <array>
