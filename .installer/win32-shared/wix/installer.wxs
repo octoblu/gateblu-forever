@@ -33,25 +33,39 @@
       </Directory>
     </Directory>
 
-    <InstallExecuteSequence>
+    <!--<InstallExecuteSequence>
       <Custom Action='RegisterGatebluService'
               Before='StartServices'>NOT Installed</Custom>
-    </InstallExecuteSequence>
+    </InstallExecuteSequence>-->
 
     <Feature Id='Complete' Level='1'>
       <ComponentGroupRef Id='MainComponentGroup' />
       <Component Id="node_component" Guid="{AAAAAAAA-C0C2-4D3F-BC22-EC7AE4963FFF}" Directory="INSTALLDIR">
         <File Id="node" KeyPath="yes" Source="$(var.CacheDir)\node.exe" />
-      </Component>
-      <Component Id="nssm_component" Guid="{AAAAAAAA-CBB2-4F3F-BC22-EC7AE4963FFF}" Directory="INSTALLDIR">
-        <File Id="nssm" KeyPath="yes" Source="$(var.CacheDir)\nssm.exe" />
         <Environment Id="MESHBLU_JSON_FILE"
-                         Action="set"
-                         Part="all"
-                         Name="MESHBLU_JSON_FILE"
-                         Permanent="yes"
-                         System="no"
-                         Value="%LOCALAPPDATA%\Octoblu\GatebluService\meshblu.json"/>
+                 Action="set"
+                 Part="all"
+                 Name="MESHBLU_JSON_FILE"
+                 Permanent="yes"
+                 System="no"
+                 Value="%LOCALAPPDATA%\Octoblu\GatebluService\meshblu.json"/>
+        <Environment Id="GATEBLU_DEVICE_PATH"
+                 Action="set"
+                 Part="all"
+                 Name="GATEBLU_DEVICE_PATH"
+                 Permanent="yes"
+                 System="no"
+                 Value="%LOCALAPPDATA%\Octoblu\GatebluService\device"/>
+        <Environment Id="GATEBLU_TMP_PATH"
+                 Action="set"
+                 Part="all"
+                 Name="GATEBLU_TMP_PATH"
+                 Permanent="yes"
+                 System="no"
+                 Value="%LOCALAPPDATA%\Octoblu\GatebluService\tmp"/>
+      </Component>
+      <!-- <Component Id="nssm_component" Guid="{AAAAAAAA-CBB2-4F3F-BC22-EC7AE4963FFF}" Directory="INSTALLDIR">
+        <File Id="nssm" KeyPath="yes" Source="$(var.CacheDir)\nssm.exe" />
         <ServiceControl Id="ControlGatebluServiceService"
                  Name="Gateblu Service"
                  Remove="uninstall"
@@ -63,7 +77,7 @@
             </MultiStringValue>
           </RegistryValue>
         </RegistryKey>
-      </Component>
+      </Component> -->
     </Feature>
 
     <Property Id="WIXUI_INSTALLDIR" Value="INSTALLDIR" />
