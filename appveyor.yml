@@ -5,6 +5,10 @@ platform:
 build:
   parallel: true
 
+cache:
+  - .installer\win32-ia32\cache
+  - .installer\win32-x64\cache
+
 matrix:
   fast_finish: true
 
