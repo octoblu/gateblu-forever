@@ -13,9 +13,12 @@ artifacts:
     name: GatebluService
 
 build_script:
-  - ps: |
-If ($env:platform -eq "x86") { . .\.installer\win32-ia32\build.ps1 }
-Else { . .\.installer\win32-x64\build.ps1 }
+  - ps: >-
+      if($env:platform -eq "x86") {
+        . .\.installer\win32-ia32\build.ps1
+      } else {
+        . .\.installer\win32-x64\build.ps1
+      }
 
 deploy:
   - provider: S3
