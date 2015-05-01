@@ -9,11 +9,11 @@ matrix:
   fast_finish: true
 
 artifacts:
-  - path: **\*.msi
+  - path: **/*.msi
     name: GatebluService
 
 build_script:
-  - .installer\win32-$(platform)\build.ps1
+  - .installer/win32-$(platform)/build.ps1
 
 deploy:
   - provider: S3
