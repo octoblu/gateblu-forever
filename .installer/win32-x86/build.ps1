@@ -1,3 +1,3 @@
-$platform = 'win32-ia32'
+$platform = 'win32-x86'
 
 . "$PSScriptRoot\..\win32-shared\build.ps1" -platform $platform

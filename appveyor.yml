@@ -13,7 +13,7 @@ artifacts:
     name: GatebluService
 
 build_script:
-  - '.installer\win32-$(platform)\build.ps1'
+  - ps: .installer\win32-$(platform)\build.ps1
 
 deploy:
   - provider: S3
