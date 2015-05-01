@@ -35,5 +35,3 @@ deploy:
     folder: GatebluService
     artifact: S3.GatebluService
     set_public: true
-    on:
-      appveyor_repo_tag: true

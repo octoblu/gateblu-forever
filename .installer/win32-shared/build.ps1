@@ -57,10 +57,10 @@ ForEach-Object {
 If (!(Test-Path $cache_dir\npm)){
   echo "Installing npm ($cache_dir)..."
   mkdir $cache_dir\npm | Out-Null
-  7z -y x "$cache_dir\\npm-2.6.0.zip" -o "$cache_dir\\npm"
+  7z x $cache_dir\npm-2.6.0.zip
   tree $cache_dir
-  Copy-Item $cache_dir\npm\npm-2.6.0\bin\npm.cmd $cache_dir
-  robocopy $cache_dir\npm\npm-2.6.0 $cache_dir\node_modules\npm /S /NFL /NDL /NS /NC /NJH /NJS
+  Copy-Item $cache_dir\npm-2.6.0\bin\npm.cmd $cache_dir
+  robocopy $cache_dir\npm-2.6.0 $cache_dir\node_modules\npm /S /NFL /NDL /NS /NC /NJH /NJS
 }
 
 echo "Copying to $tmp_dir..."
