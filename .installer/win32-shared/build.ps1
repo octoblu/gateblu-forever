@@ -50,6 +50,7 @@ Where-Object { (!(Test-Path $cache_dir\$_)) } |
 ForEach-Object {
   $source = "https://s3-us-west-2.amazonaws.com/gateblu/node-binaries/$platform/$_"
   $destination = "$cache_dir\$_"
+  echo "Downloading $cache_dir\$_..."
   Invoke-WebRequest $source -OutFile $destination
 }
 
