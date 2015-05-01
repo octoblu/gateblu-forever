@@ -9,7 +9,7 @@ matrix:
   fast_finish: true
 
 artifacts:
-  - path: '**\*.msi'
+  - path: '*.msi'
     name: GatebluService
 
 build_script:
@@ -20,6 +20,12 @@ build_script:
         . .\.installer\win32-x64\build.ps1
       }
 
+after_build:
+  - ps: >-
+      mkdir $env:APPVEYOR_REPO_TAG_NAME
+      cp '**\*.msi' $env:APPVEYOR_REPO_TAG_NAME\
+  - ps: $root = Resolve-Path $env:APPVEYOR_REPO_TAG_NAME; [IO.Directory]::GetFiles($root.Path, '*.*', 'AllDirectories') | % { Push-AppveyorArtifact $_ -FileName $_.Substring($root.Path.Length + 1) -DeploymentName S3.GatebluService }
+
 deploy:
   - provider: S3
     access_key_id: AKIAIT4X4NDGM2WVL6VA
@@ -27,5 +33,7 @@ deploy:
       secure: J01/MZX00MKgxnFXoyiqoHSSwZbccuEfIUhw9yqRErCO0WWv/m3qDAqLe7RaN/E5
     bucket: gateblu
     folder: GatebluService
-    artifact: GatebluService
+    artifact: S3.GatebluService
     set_public: true
+    on:
+      appveyor_repo_tag: true
