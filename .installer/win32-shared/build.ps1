@@ -25,13 +25,9 @@ $output_dir = "$script_dir\output"
 $cache_dir = "$script_dir\cache"
 $tmp_dir = [io.path]::GetTempFileName()
 $wix_template_dir = "$shared_dir\wix"
-$env:PATH += ";C:\Program Files (x86)\WiX Toolset v3.8"
+$wix_dir = "C:\Program Files (x86)\WiX Toolset 3.8"
 
-echo "x86..."
-ls "C:\Program Files (x86)"
-
-echo "x64..."
-ls "C:\Program Files"
+ls $wix_dir\
 
 @(
     $output_dir
@@ -85,9 +81,9 @@ Set-Location -Path $tmp_dir
 Set-Location -Path $script_dir\..\..
 
 #Generate the installer
-. heat.exe dir $tmp_dir -srd -dr INSTALLDIR -cg MainComponentGroup -out $shared_dir\wix\directory.wxs -ke -sfrag -gg -var var.SourceDir -sreg -scom
-. candle.exe -dCacheDir="$cache_dir" -dSourceDir="$tmp_dir" $wix_template_dir\*.wxs -o $output_dir\\ -ext WiXUtilExtension
-. light.exe -o $output_dir\GatebluService.msi $output_dir\*.wixobj -cultures:en-US -ext WixUIExtension.dll -ext WiXUtilExtension
+. $wix_dir\heat.exe dir $tmp_dir -srd -dr INSTALLDIR -cg MainComponentGroup -out $shared_dir\wix\directory.wxs -ke -sfrag -gg -var var.SourceDir -sreg -scom
+. $wix_dir\candle.exe -dCacheDir="$cache_dir" -dSourceDir="$tmp_dir" $wix_template_dir\*.wxs -o $output_dir\\ -ext WiXUtilExtension
+. $wix_dir\light.exe -o $output_dir\GatebluService.msi $output_dir\*.wixobj -cultures:en-US -ext WixUIExtension.dll -ext WiXUtilExtension
 
 # Optional digital sign the certificate.
 # You have to previously import it.

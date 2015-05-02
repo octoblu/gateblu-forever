@@ -18,6 +18,7 @@ artifacts:
 
 build_script:
   - ps: >-
+      $env:PATH += ";C:\Program Files (x86)\WiX Toolset v3.8"
       if($env:platform -eq "x86") {
         . .\.installer\win32-ia32\build.ps1
       } else {
