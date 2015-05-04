@@ -9,13 +9,6 @@ cache:
   - .installer\win32-ia32\cache
   - .installer\win32-x64\cache
 
-matrix:
-  fast_finish: true
-
-artifacts:
-  - path: '*.msi'
-    name: GatebluService
-
 build_script:
   - ps: >-
       if($env:platform -eq "x86") {
@@ -31,8 +24,8 @@ after_build:
       } else {
         $env:TAG_NAME=$env:APPVEYOR_REPO_COMMIT
       }
-  - ps: mkdir $env:TAG_NAME
-  - ps: cp '**\*.msi' $env:TAG_NAME
+  - ps: mkdir $env:TAG_NAME | Out-Null
+  - ps: cp '.\.installer\win32-*\output\*.msi' $env:TAG_NAME
   - ps: $root = Resolve-Path $env:TAG_NAME; [IO.Directory]::GetFiles($root.Path, '*.*', 'AllDirectories') | % { Push-AppveyorArtifact $_ -FileName $_.Substring($root.Path.Length + 1) -DeploymentName S3.GatebluService }
 
 deploy:
@@ -41,6 +34,6 @@ deploy:
     secret_access_key:
       secure: J01/MZX00MKgxnFXoyiqoHSSwZbccuEfIUhw9yqRErCO0WWv/m3qDAqLe7RaN/E5
     bucket: gateblu
-    folder: GatebluService
+    folder: gateblu-service/win32
     artifact: S3.GatebluService
     set_public: true
