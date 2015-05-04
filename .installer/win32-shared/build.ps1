@@ -22,7 +22,7 @@ function Get-ScriptDirectory
 $script_dir = Get-ScriptDirectory
 $shared_dir = "$script_dir\..\win32-shared"
 $output_dir = "$script_dir\output"
-$cache_dir = "$script_dir\cache"
+$cache_dir = "$script_dir\..\cache\$platform"
 $tmp_dir = [io.path]::GetTempFileName()
 $wix_template_dir = "$shared_dir\wix"
 $wix_dir = "C:\Program Files (x86)\WiX Toolset v3.8\bin"
@@ -58,7 +58,7 @@ ForEach-Object {
 If (!(Test-Path $cache_dir\npm)){
   echo "Installing npm ($cache_dir)..."
   pushd $cache_dir
-  7z x $cache_dir\npm-2.6.0.zip | Out-Null
+  7z -y x $cache_dir\npm-2.6.0.zip | Out-Null
   popd
   Copy-Item $cache_dir\npm-2.6.0\bin\npm.cmd $cache_dir
   echo "Copying npm-2.6.0"
