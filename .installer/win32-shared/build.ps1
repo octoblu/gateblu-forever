@@ -25,9 +25,7 @@ $output_dir = "$script_dir\output"
 $cache_dir = "$script_dir\cache"
 $tmp_dir = [io.path]::GetTempFileName()
 $wix_template_dir = "$shared_dir\wix"
-$wix_dir = "C:\Program Files (x86)\WiX Toolset 3.8"
-
-ls $wix_dir\
+$wix_dir = "C:\Program Files (x86)\WiX Toolset v3.8"
 
 @(
     $output_dir
