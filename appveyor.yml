@@ -26,9 +26,14 @@ build_script:
 
 after_build:
   - ps: >-
-      mkdir $env:APPVEYOR_REPO_TAG_NAME;
-      cp '**\*.msi' $env:APPVEYOR_REPO_TAG_NAME\
-  - ps: $root = Resolve-Path $env:APPVEYOR_REPO_TAG_NAME; [IO.Directory]::GetFiles($root.Path, '*.*', 'AllDirectories') | % { Push-AppveyorArtifact $_ -FileName $_.Substring($root.Path.Length + 1) -DeploymentName S3.GatebluService }
+      if($env:APPVEYOR_REPO_TAG_NAME){
+        $env:TAG_NAME=$env:APPVEYOR_REPO_TAG_NAME
+      } else {
+        $env:TAG_NAME=$env:APPVEYOR_REPO_COMMIT
+      }
+  - ps: mkdir $env:TAG_NAME
+  - ps: cp '**\*.msi' $env:TAG_NAME
+  - ps: $root = Resolve-Path $env:TAG_NAME; [IO.Directory]::GetFiles($root.Path, '*.*', 'AllDirectories') | % { Push-AppveyorArtifact $_ -FileName $_.Substring($root.Path.Length + 1) -DeploymentName S3.GatebluService }
 
 deploy:
   - provider: S3
