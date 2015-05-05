@@ -25,7 +25,6 @@ class DeviceManager extends EventEmitter
                                       devicesToDelete
                                       unchangedDevices) =>
       connectorsToInstall = _.compact _.uniq _.pluck devicesToStart, 'connector'
-
       debug "connectorsToInstall", connectorsToInstall
       async.series(
         [
@@ -46,11 +45,9 @@ class DeviceManager extends EventEmitter
   getDevicesByOperation: (newDevices=[], callback=->) =>
     oldDevices = _.clone @runningDevices
     devicesToProcess = _.clone newDevices
-    debug 'newDevices length', newDevices.length
     debug 'getDevicesByOperation'
-    async.map devicesToProcess, @deviceExists, (error, remainingDevices) =>
-      return callback error if error?
-
+    async.filterSeries devicesToProcess, @deviceExistsAsync, (remainingDevices) =>
+      debug 'remainingDevices', remainingDevices
       remainingDevices = _.compact remainingDevices
       debug 'oldDevices', _.pluck(oldDevices, 'name')
       debug 'newDevices', _.pluck(remainingDevices, 'name')
@@ -84,6 +81,13 @@ class DeviceManager extends EventEmitter
 
       callback devicesToStart, devicesToStop, devicesToRestart, devicesToDelete, unchangedDevices
 
+  deviceExistsAsync: (device, callback=->) =>
+    @deviceExists device, (error, deviceResponse) =>
+      debug 'deviceExistsAsync', error, deviceResponse
+      return callback false if error?
+      return callback false unless deviceResponse?
+      callback true
+
   deviceExists: (device, callback=->) =>
     debug 'deviceExists', device.uuid
 
@@ -93,12 +97,11 @@ class DeviceManager extends EventEmitter
 
     httpConfig = _.extend {}, @config, auth
     meshbluHttp = new MeshbluHttp httpConfig
-    debug 'meshbluHttp', httpConfig
     meshbluHttp.device device.uuid, (error, meshbluDevice) =>
       debug 'meshbluHttp response', error, meshbluDevice
       return callback error if error?
       device = _.extend {}, meshbluDevice, device
-      debug 'device exists', device.name
+      debug 'device exists', device.uuid, device.name
       callback null, device
 
   getDevicePath: (device) =>
@@ -150,8 +153,7 @@ class DeviceManager extends EventEmitter
     nodeModulesDir = path.join @config.tmpPath, 'node_modules'
     connectorPath = path.join nodeModulesDir, connector
     npmMethod = "install"
-    npmMethod = "update" if fs.existsSync connectorPath
-    fs.mkdirpSync connectorPath
+    npmMethod = "update" if fs.existsSync "#{connectorPath}/package.json"
     prefix = ''
     prefix = 'cmd.exe /c ' if process.platform == 'win32'
     exec("#{prefix} npm --prefix=. #{npmMethod} #{connector}"
