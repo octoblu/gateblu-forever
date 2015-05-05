@@ -42,6 +42,9 @@ deploy:
     secret_access_key:
       secure: J01/MZX00MKgxnFXoyiqoHSSwZbccuEfIUhw9yqRErCO0WWv/m3qDAqLe7RaN/E5
     bucket: gateblu
-    folder: gateblu-service/win32
+    folder: gateblu-service
     artifact: S3.GatebluService
     set_public: true
+    on:
+      branch: atom-shell
+      appveyor_repo_tag: true
