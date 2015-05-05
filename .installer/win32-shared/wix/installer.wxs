@@ -58,9 +58,6 @@
                  System="no"
                  Value="%LOCALAPPDATA%\Octoblu\GatebluService\tmp"/>
       </Component>
-      <Component Id="gatebluservicetray_component" Guid="{AAAAAAAA-CDD2-4D3F-BC22-EC7AE4963FFF}" Directory="INSTALLDIR">
-        <File Id="gatebluservicetray" KeyPath="yes" Source="$(var.CacheDir)\GatebluServiceTray.exe" />
-      </Component>
       <Component Id="GatebluServiceAutostart" Guid="45730905-EAFD-4653-9674-30972861595C" Directory="INSTALLDIR">
         <RegistryValue Id="GatebluService.rst" Root="HKMU" Action="write"
                        Key="Software\Microsoft\Windows\CurrentVersion\Run"

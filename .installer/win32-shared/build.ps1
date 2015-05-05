@@ -72,7 +72,6 @@ robocopy $shared_dir\assets $tmp_dir /S /NFL /NDL /NS /NC /NJH /NJS
 
 Copy-Item $cache_dir\npm.cmd $tmp_dir\npm.cmd
 
-
 echo "Adding GatebluServiceTray..."
 $source = "https://s3-us-west-2.amazonaws.com/gateblu/gateblu-service-tray/latest/GatebluServiceTray-$platform.zip"
 $destination = "$tmp_dir\GatebluServiceTray.zip"
