@@ -45,7 +45,6 @@ If (!(Test-Path $cache_dir)){
 @(
     'node.exe'
     'npm-2.6.0.zip'
-    'GatebluServiceTray.exe'
 ) |
 Where-Object { (!(Test-Path $cache_dir\$_)) } |
 ForEach-Object {
@@ -73,10 +72,21 @@ robocopy $shared_dir\assets $tmp_dir /S /NFL /NDL /NS /NC /NJH /NJS
 
 Copy-Item $cache_dir\npm.cmd $tmp_dir\npm.cmd
 
+
+echo "Adding GatebluServiceTray..."
+$source = "https://s3-us-west-2.amazonaws.com/gateblu/gateblu-service-tray/latest/GatebluServiceTray-$platform.zip"
+$destination = "$tmp_dir\GatebluServiceTray.zip"
+echo "Downloading $tmp_dir\GatebluServiceTray.zip..."
+Invoke-WebRequest $source -OutFile $destination
+pushd $tmp_dir
+7z -y x $tmp_dir\GatebluServiceTray.zip | Out-Null
+popd
+Remove-Item $tmp_dir\GatebluServiceTray.zip -Force -Recurse
+
 echo "Installing node_modules..."
-Set-Location -Path $tmp_dir
+pushd $tmp_dir
 . "$cache_dir\npm.cmd" install -s --production
-Set-Location -Path $script_dir\..\..
+popd
 
 #Generate the installer
 . $wix_dir\heat.exe dir $tmp_dir -srd -dr INSTALLDIR -cg MainComponentGroup -out $shared_dir\wix\directory.wxs -ke -sfrag -gg -var var.SourceDir -sreg -scom
@@ -88,4 +98,4 @@ Set-Location -Path $script_dir\..\..
 #. "C:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\Bin\signtool.exe" sign /n "Auth10" .\output\installer.msi
 
 #Remove the temp
-Remove-Item -Recurse -Force $tmp_dir
+Remove-Item $tmp_dir -Recurse -Force
