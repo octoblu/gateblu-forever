@@ -16,9 +16,9 @@
     <key>KeepAlive</key>
     <true/>
     <key>StandardOutPath</key>
-    <string>/Users/octoblu/gateblu.log</string>
+    <string>/var/log/gateblu/gateblu.log</string>
     <key>StandardErrorPath</key>
-    <string>/Users/octoblu/gateblu-error.log</string>
+    <string>/var/log/gateblu/gateblu-error.log</string>
     <key>WorkingDirectory</key>
     <string>/Library/Application Support/GatebluService</string>
 </dict>
