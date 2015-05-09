@@ -39,16 +39,16 @@ var GatebluCommand = function(){
         console.error(error.message, error.stack);
       }
       debug('exit', error);
-      gateblu.cleanup();
+      // gateblu.cleanup();
     });
     process.on('SIGINT', function(){
       debug('SIGINT');
-      gateblu.cleanup();
+      // gateblu.cleanup();
     });
     process.on('uncaughtException', function(error){
       console.error(error.message, error.stack);
       debug('uncaughtException', error);
-      gateblu.cleanup();
+      // gateblu.cleanup();
     });
   };
 
