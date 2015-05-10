@@ -150,6 +150,10 @@ class DeviceManager extends EventEmitter
       debug 'stdout', device.uuid, data.toString()
       @emit 'stdout', data.toString(), device
 
+    child.on 'stop', =>
+      debug "process for #{device.uuid} stopped."
+      delete @deviceProcesses[device.uuid]
+
     debug 'forever', {uuid: device.uuid, name: device.name}, 'starting'
     child.start()
     @deviceProcesses[device.uuid] = child
@@ -211,17 +215,20 @@ class DeviceManager extends EventEmitter
       debug 'copying files', devicePath
       fs.removeSync devicePath
       fs.copySync connectorPath, devicePath
-      _.defer => callback()
+      _.defer -> callback()
 
     catch error
       console.error error
       @emit 'stderr', error
       debug 'forever error:', error
-      _.defer => callback()
+      _.defer -> callback()
 
   writeMeshbluJSON: (devicePath, device) =>
-    meshbluFilename = path.join(devicePath, 'meshblu.json')
-    deviceConfig = _.extend {}, device, {server: @config.server, port: @config.port}
+    meshbluFilename = path.join devicePath, 'meshblu.json'
+    deviceConfig = _.extend {},
+      device,
+      server: @config.server, port: @config.port
+
     meshbluConfig = JSON.stringify deviceConfig, null, 2
     debug 'writing meshblu.json', devicePath
     fs.writeFileSync meshbluFilename, meshbluConfig
@@ -232,21 +239,21 @@ class DeviceManager extends EventEmitter
       debug 'restartDevice error:', error if error?
       @startDevice device, callback
 
+  shutdown: (callback=->) =>
+    async.eachSeries _.keys(@deviceProcesses), (uuid, callback) =>
+      @stopDevice uuid: uuid, callback
+    , callback
+
   stopDevice: (device, callback=->) =>
     debug 'stopDevice', device.uuid
     deviceProcess = @deviceProcesses[device.uuid]
     return callback null, device.uuid unless deviceProcess?
 
-    deviceProcess.on 'stop', =>
-      debug "process for #{device.uuid} stopped."
-      delete @deviceProcesses[device.uuid]
-      callback null, device
-
     if deviceProcess.running
       debug 'killing process for', device.uuid
       deviceProcess.killSignal = 'SIGINT'
-      deviceProcess.kill()
-      return
+      deviceProcess.stop()
+      callback null, device.uuid
 
     debug "process for #{device.uuid} wasn't running. Removing record."
     delete @deviceProcesses[device.uuid]
@@ -256,8 +263,5 @@ class DeviceManager extends EventEmitter
     fs.remove @getDevicePath(device), (error) =>
       console.error error if error?
       callback()
-
-  stopDevices: (callback=->) =>
-    async.each @runningDevices, @stopDevice, callback
 
 module.exports = DeviceManager
