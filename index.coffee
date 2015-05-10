@@ -31,94 +31,6 @@ class DeviceManager extends EventEmitter
       (callback) => @removeDeletedDeviceDirectory device, callback
     ], callback
 
-  # refreshDevices: (devices, callback) =>
-  #   debug 'refreshDevices', _.pluck(devices, 'uuid')
-  #
-  #   @getDevicesByOperation devices, ( devicesToStart
-  #                                     devicesToStop
-  #                                     devicesToRestart
-  #                                     devicesToDelete
-  #                                     unchangedDevices) =>
-  #     connectorsToInstall = _.compact _.uniq _.pluck devicesToStart, 'connector'
-  #     debug "connectorsToInstall", connectorsToInstall
-  #     async.series(
-  #       [
-  #         (callback) => async.each connectorsToInstall, @installConnector, callback
-  #         (callback) => async.each devicesToStop, @stopDevice, callback
-  #         (callback) => async.each devicesToDelete, @stopDevice, callback
-  #         (callback) => async.each devicesToDelete, @removeDeletedDeviceDirectory, callback
-  #         (callback) => async.each devicesToStart, @setupDevice, callback
-  #         (callback) => async.each devicesToStart, @startDevice, callback
-  #         (callback) => async.each devicesToRestart, @restartDevice, callback
-  #       ]
-  #       (error, result)=>
-  #         @runningDevices = _.union devicesToStart, devicesToRestart, unchangedDevices
-  #         @emit 'update', _.union(devicesToStart, devicesToRestart, devicesToStop, unchangedDevices)
-  #         callback error, result
-  #     )
-  #
-  # getDevicesByOperation: (newDevices=[], callback=->) =>
-  #   oldDevices = _.clone @runningDevices
-  #   devicesToProcess = _.clone newDevices
-  #   debug 'getDevicesByOperation', oldDevices, devicesToProcess
-  #   async.filterSeries devicesToProcess, @deviceExistsAsync, (remainingDevices) =>
-  #     debug 'remainingDevices', remainingDevices
-  #     remainingDevices = _.compact remainingDevices
-  #     debug 'oldDevices', _.pluck(oldDevices, 'name')
-  #     debug 'newDevices', _.pluck(remainingDevices, 'name')
-  #
-  #     devicesToDelete = _.filter oldDevices, (device) =>
-  #       ! _.findWhere remainingDevices, uuid: device.uuid
-  #
-  #     debug 'devicesToDelete:', _.pluck(devicesToDelete, 'name')
-  #     remainingDevices = _.difference remainingDevices, devicesToDelete
-  #
-  #     devicesToStop = _.filter remainingDevices, stop: true
-  #     debug 'devicesToStop:', _.pluck(devicesToStop, 'name')
-  #
-  #     remainingDevices = _.difference remainingDevices, devicesToStop
-  #
-  #     devicesToStart = _.filter remainingDevices, (device) =>
-  #       ! _.findWhere oldDevices, uuid: device.uuid
-  #
-  #     debug 'devicesToStart:', _.pluck(devicesToStart, 'name')
-  #
-  #     remainingDevices = _.difference remainingDevices, devicesToStart
-  #
-  #     devicesToRestart = _.filter remainingDevices, (device) =>
-  #       deviceToRestart = _.findWhere oldDevices, uuid: device.uuid
-  #       return device.token != deviceToRestart?.token
-  #
-  #     debug 'devicesToRestart:', _.pluck(devicesToRestart, 'name')
-  #
-  #     unchangedDevices = _.difference remainingDevices, devicesToRestart
-  #     debug 'unchangedDevices', _.pluck(unchangedDevices, 'name')
-  #
-  #     callback devicesToStart, devicesToStop, devicesToRestart, devicesToDelete, unchangedDevices
-  #
-  # deviceExistsAsync: (device, callback=->) =>
-  #   @deviceExists device, (error, deviceResponse) =>
-  #     debug 'deviceExistsAsync', error, deviceResponse
-  #     return callback false if error?
-  #     return callback false unless deviceResponse?
-  #     callback true
-  #
-  # deviceExists: (device, callback=->) =>
-  #   debug 'deviceExists', device.uuid
-  #
-  #   auth =
-  #     uuid: device.uuid
-  #     token: device.token
-  #
-  #   httpConfig = _.extend {}, @config, auth
-  #   meshbluHttp = new MeshbluHttp httpConfig
-  #   meshbluHttp.device device.uuid, (error, meshbluDevice) =>
-  #     debug 'meshbluHttp response', error, meshbluDevice
-  #     return callback error if error?
-  #     device = _.extend {}, meshbluDevice, device
-  #     debug 'device exists', device.uuid, device.name
-  #     callback null, device
-
   getDevicePath: (device) =>
     path.join @config.devicePath, device.uuid
 
@@ -214,14 +126,13 @@ class DeviceManager extends EventEmitter
     try
       debug 'copying files', devicePath
       fs.removeSync devicePath
-      fs.copySync connectorPath, devicePath
-      _.defer -> callback()
+      fs.copy connectorPath, devicePath, callback
 
     catch error
       console.error error
       @emit 'stderr', error
       debug 'forever error:', error
-      _.defer -> callback()
+      _.defer -> callback new Error('copy error')
 
   writeMeshbluJSON: (devicePath, device) =>
     meshbluFilename = path.join devicePath, 'meshblu.json'
