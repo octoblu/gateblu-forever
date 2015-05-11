@@ -24,7 +24,7 @@
     "forever": "^0.13.0",
     "forever-monitor": "~1.5.2",
     "fs-extra": "~0.13.0",
-    "gateblu": "^3.3.3",
+    "gateblu": "^4.0.0",
     "lodash": "~2.4.1",
     "meshblu-http": "^2.0.1",
     "rimraf": "~2.2.8"
