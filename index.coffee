@@ -21,7 +21,6 @@ class DeviceManager extends EventEmitter
     async.series [
       (callback) => @installConnector device.connector, callback
       (callback) => @setupDevice device, callback
-      (callback) => @startDevice device, callback
     ], callback
 
   removeDevice: (device, callback=->) =>
@@ -97,7 +96,7 @@ class DeviceManager extends EventEmitter
       (error, stdout, stderr) =>
         if error?
           debug 'npm install error:', error
-          console.error error
+          console.error 'Error: ', error
           @emit 'stderr', error
           return callback()
 
@@ -115,7 +114,7 @@ class DeviceManager extends EventEmitter
     )
 
   setupDevice: (device, callback) =>
-    debug 'setupDevice', {uuid: device.uuid, name: device.name}
+    debug 'setupDevice', uuid: device.uuid, name: device.name
 
     devicePath = @getDevicePath device
     connectorPath = path.join @config.tmpPath, 'node_modules', device.connector
@@ -126,7 +125,9 @@ class DeviceManager extends EventEmitter
     try
       debug 'copying files', devicePath
       fs.removeSync devicePath
-      fs.copy connectorPath, devicePath, callback
+      fs.copy connectorPath, devicePath, =>
+        debug 'done copying', devicePath
+        callback()
 
     catch error
       console.error error
@@ -143,12 +144,6 @@ class DeviceManager extends EventEmitter
     meshbluConfig = JSON.stringify deviceConfig, null, 2
     debug 'writing meshblu.json', devicePath
     fs.writeFileSync meshbluFilename, meshbluConfig
-
-  restartDevice: (device, callback) =>
-    debug 'restartDevice', {uuid: device.uuid, name: device.name}
-    @stopDevice device, (error) =>
-      debug 'restartDevice error:', error if error?
-      @startDevice device, callback
 
   shutdown: (callback=->) =>
     async.eachSeries _.keys(@deviceProcesses), (uuid, callback) =>
@@ -171,7 +166,7 @@ class DeviceManager extends EventEmitter
     callback null, device.uuid
 
   removeDeletedDeviceDirectory: (device, callback) =>
-    fs.remove @getDevicePath(device), (error) =>
+    fs.remove @getDevicePath(device), (error) ->
       console.error error if error?
       callback()
 
