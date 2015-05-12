@@ -1,9 +1,0 @@
-#!/bin/bash
-if [ "$TRAVIS_OS_NAME" != "osx" ]; then
-  exit 0
-fi
-
-brew install nvm
-set +e
-source $(brew --prefix nvm)/nvm.sh
-set -e
