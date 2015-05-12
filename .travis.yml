@@ -11,8 +11,8 @@ matrix:
   allow_failures:
     - os: osx
 install:
-- if [ "$TRAVIS_OS_NAME" == "osx" ]; then brew install nvm fi
-- if [ "$TRAVIS_OS_NAME" == "osx" ]; then source $(brew --prefix nvm)/nvm.sh fi
+- if [ "$TRAVIS_OS_NAME" == "osx" ]; then brew install nvm; fi
+- if [ "$TRAVIS_OS_NAME" == "osx" ]; then source $(brew --prefix nvm)/nvm.sh; fi
 - nvm install v0.10
 - npm install
 script:
