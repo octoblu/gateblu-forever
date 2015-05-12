@@ -7,4 +7,3 @@ brew install nvm
 set +e
 source $(brew --prefix nvm)/nvm.sh
 set -e
-nvm install 0.10.38
