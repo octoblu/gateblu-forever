@@ -17,13 +17,29 @@ install:
 - npm install
 script:
 - npm test
+after_success:
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then .installer/darwin/build; fi
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then mkdir -p dpl_s3/latest; cp .installer/darwin/build/cache/GatebluService.pkg dpl_s3/latest; fi
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then mkdir -p dpl_s3/${TRAVIS_TAG:-$TRAVIS_COMMIT}; cp .installer/darwin/build/cache/GatebluService.pkg dpl_s3/${TRAVIS_TAG:-$TRAVIS_COMMIT}; fi
 deploy:
-  provider: npm
+- provider: npm
   skip_cleanup: true
   clean_up: false
   email: serveradmin@octoblu.com
   api_key:
     secure: U617xKK4QrU98MMzDmAZrlhV0vqcH3mbJvZPYJGoYCbm/PAaA5NtBbaNd+CH0jP1EDItzk2vpjQw2o8tYBh1l1qGSDtOnRARR9AYZShwVdACbItuFvAn+MzMMKPcal2CnKOt6h4YWQuc4O9TDTL/K53jxRknW3EdhQ1TMkMv0NA=
+  on:
+    tags: true
+    all_branches: true
+- provider: s3
+  access_key_id: AKIAIT4X4NDGM2WVL6VA
+  secret_access_key:
+    secure: "dsz429vC7qpqSWtiaKeNMdp4VYJz/xDfuRKC2qAGLZQWJ/l0p44fM26lDGfGE6eG7JddKmMbJOt5jq0sAM3ICj+BRoZh0o8J1+miFxSUR3nNh6ryQQnRfVaFFyaS2hpR97ql9/aw4/ad6UEIy3EGxRrVfLYkrMuLfkZTnAt4wXI="
+  bucket: gateblu
+  upload-dir: gateblu-service
+  region: us-west-2
+  skip_cleanup: true
+  local-dir: dpl_s3
   on:
     tags: true
     all_branches: true
