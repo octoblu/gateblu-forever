@@ -1,0 +1,42 @@
+#!/bin/sh
+ROOT_DIR=$PWD
+INSTALLER_DIR=$ROOT_DIR/.installer/darwin
+CACHE_DIR=$INSTALLER_DIR/cache
+OUTPUT_DIR=$INSTALLER_DIR/output
+
+mkdir -p $CACHE_DIR
+
+if [ ! -f $CACHE_DIR/node.pkg ]; then
+  pushd $CACHE_DIR
+  curl -sO https://s3-us-west-2.amazonaws.com/gateblu/node-binaries/darwin/node.pkg
+  popd
+fi
+
+if [ ! -f $CACHE_DIR/npm.pkg ]; then
+  pushd $CACHE_DIR
+  curl -sO https://s3-us-west-2.amazonaws.com/gateblu/node-binaries/darwin/npm.pkg
+  popd
+fi
+
+sudo rm -rf $OUTPUT_DIR
+rsync -avq --exclude='node_modules' --exclude='meshblu.json' --exclude='test' --exclude='.git' --exclude='.installer' $ROOT_DIR/ $OUTPUT_DIR
+cp $INSTALLER_DIR/com.octoblu.GatebluService.plist $INSTALLER_DIR/start-gateblu-service $OUTPUT_DIR
+pushd $OUTPUT_DIR
+npm install -s --production
+sudo chown -R root:wheel $OUTPUT_DIR
+
+pkgbuild --root . \
+  --identifier com.octoblu.GatebluService \
+  --version 1.0 \
+  --component-plist $INSTALLER_DIR/GatebluServiceCore.plist \
+  --ownership recommended \
+  --install-location "/Library/Application Support/GatebluService" \
+  --scripts $INSTALLER_DIR/Scripts \
+  $CACHE_DIR/GatebluServiceCore.pkg
+
+productbuild --distribution $INSTALLER_DIR/distribution.plist \
+  --resources $INSTALLER_DIR \
+  --package-path $CACHE_DIR \
+  $CACHE_DIR/GatebluService.pkg
+
+popd

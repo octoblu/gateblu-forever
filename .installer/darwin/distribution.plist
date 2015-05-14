@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<installer-gui-script minSpecVersion="2">
+    <pkg-ref id="com.octoblu.GatebluService"/>
+    <pkg-ref id="org.nodejs.pkg"/>
+    <pkg-ref id="org.nodejs.node.npm.pkg"/>
+    <options customize="never" require-scripts="false"/>
+    <volume-check>
+        <allowed-os-versions>
+            <os-version min="10.9"/>
+        </allowed-os-versions>
+    </volume-check>
+    <choices-outline>
+        <line choice="default">
+            <line choice="com.octoblu.GatebluService"/>
+            <line choice="org.nodejs.pkg"/>
+            <line choice="org.nodejs.node.npm.pkg"/>
+        </line>
+    </choices-outline>
+    <choice id="default"/>
+    <choice id="com.octoblu.GatebluService" visible="false">
+        <pkg-ref id="com.octoblu.GatebluService"/>
+    </choice>
+    <pkg-ref id="com.octoblu.GatebluService" version="1.0" onConclusion="none">GatebluServiceCore.pkg</pkg-ref>
+    <choice id="org.nodejs.pkg" visible="false">
+        <pkg-ref id="org.nodejs.pkg"/>
+    </choice>
+    <pkg-ref id="org.nodejs.pkg" version="1.0" onConclusion="none">node.pkg</pkg-ref>
+    <choice id="org.nodejs.node.npm.pkg" visible="false">
+        <pkg-ref id="org.nodejs.node.npm.pkg"/>
+    </choice>
+    <pkg-ref id="org.nodejs.node.npm.pkg" version="1.0" onConclusion="none">npm.pkg</pkg-ref>
+</installer-gui-script>
