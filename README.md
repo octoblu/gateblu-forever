@@ -8,6 +8,10 @@
 Gateblu-Forever will automatically register itself with meshblu.octoblu.com on startup.
 
 ```
+npm install
+```
+
+```
 npm start
 ```
 
