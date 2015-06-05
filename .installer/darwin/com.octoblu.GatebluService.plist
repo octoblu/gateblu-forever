@@ -7,11 +7,11 @@
     <key>EnvironmentVariables</key>
     <dict>
       <key>PATH</key>
-      <string>/sbin:/usr/sbin:/bin:/usr/bin:/Library/Application Support/GatebluService/node/bin</string>
+      <string>/sbin:/usr/sbin:/bin:/usr/bin:/Library/Octoblu/GatebluService/node/bin</string>
     </dict>
     <key>ProgramArguments</key>
     <array>
-      <string>/Library/Application Support/GatebluService/start-gateblu-service</string>
+      <string>/Library/Octoblu/GatebluService/start-gateblu-service</string>
     </array>
     <key>KeepAlive</key>
     <true/>
@@ -20,6 +20,6 @@
     <key>StandardErrorPath</key>
     <string>/var/log/gateblu/gateblu-error.log</string>
     <key>WorkingDirectory</key>
-    <string>/Library/Application Support/GatebluService</string>
+    <string>/Library/Octoblu/GatebluService</string>
 </dict>
 </plist>

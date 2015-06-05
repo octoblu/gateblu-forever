@@ -2,6 +2,6 @@
 set -e
 /usr/bin/sudo mkdir -p /var/log/gateblu
 /usr/bin/sudo chmod 777 /var/log/gateblu
-ln -sf "/Library/Application Support/GatebluService/com.octoblu.GatebluService.plist" /Library/LaunchAgents
+ln -sf "/Library/Octoblu/GatebluService/com.octoblu.GatebluService.plist" /Library/LaunchAgents
 /usr/bin/sudo -u $USER /bin/launchctl load "/Library/LaunchAgents/com.octoblu.GatebluService.plist"
 /usr/bin/sudo -u $USER /bin/launchctl start "com.octoblu.GatebluService"

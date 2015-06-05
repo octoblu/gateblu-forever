@@ -30,7 +30,7 @@ pkgbuild --root . \
   --version 1.0 \
   --component-plist $INSTALLER_DIR/GatebluServiceCore.plist \
   --ownership recommended \
-  --install-location "/Library/Application Support/GatebluService" \
+  --install-location "/Library/Octoblu/GatebluService" \
   --scripts $INSTALLER_DIR/Scripts \
   $CACHE_DIR/GatebluServiceCore.pkg
 
