@@ -1,6 +1,6 @@
 #!/bin/sh
 
-export GATEBLU_HOME="$HOME/Library/Octoblu/GatebluService"
+export GATEBLU_HOME="$HOME/Library/Application Support/GatebluService"
 export MESHBLU_JSON_FILE=$GATEBLU_HOME/meshblu.json
 export GATEBLU_DEVICE_PATH=$GATEBLU_HOME/devices
 export GATEBLU_TMP_PATH=$GATEBLU_HOME/tmp
