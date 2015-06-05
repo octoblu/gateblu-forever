@@ -37,3 +37,4 @@ tmp
 .installer/win32-*/output
 .installer/win32-*/**/directory.wxs
 .installer/darwin/output
+*/**/.DS_Store

@@ -16,7 +16,7 @@ install:
 - nvm install v0.10
 - npm install
 script:
-- npm test
+- if [ "$TRAVIS_OS_NAME" != "osx" ]; then npm test; fi
 after_success:
   - mkdir -p dpl_s3
   - if [ "$TRAVIS_OS_NAME" == "osx" ]; then .installer/darwin/build; fi
