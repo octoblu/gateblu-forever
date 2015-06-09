@@ -46,5 +46,5 @@ deploy:
     artifact: S3.GatebluService
     set_public: true
     on:
-      branch: atom-shell
+      branch: master
       appveyor_repo_tag: true
