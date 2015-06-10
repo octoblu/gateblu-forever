@@ -21,12 +21,12 @@
         <pkg-ref id="com.octoblu.GatebluService"/>
     </choice>
     <pkg-ref id="com.octoblu.GatebluService" version="1.0" onConclusion="none">GatebluServiceCore.pkg</pkg-ref>
-    <choice id="org.nodejs.pkg" visible="false">
-        <pkg-ref id="org.nodejs.pkg"/>
+    <choice id="com.octoblu.GatebluService.nodejs.pkg" visible="false">
+        <pkg-ref id="com.octoblu.GatebluService.nodejs.pkg"/>
     </choice>
-    <pkg-ref id="org.nodejs.pkg" version="1.0" onConclusion="none">node.pkg</pkg-ref>
-    <choice id="org.nodejs.node.npm.pkg" visible="false">
-        <pkg-ref id="org.nodejs.node.npm.pkg"/>
+    <pkg-ref id="com.octoblu.GatebluService.nodejs.pkg" version="1.0" onConclusion="none">node.pkg</pkg-ref>
+    <choice id="com.octoblu.GatebluService.node.npm.pkg" visible="false">
+        <pkg-ref id="com.octoblu.GatebluService.node.npm.pkg"/>
     </choice>
-    <pkg-ref id="org.nodejs.node.npm.pkg" version="1.0" onConclusion="none">npm.pkg</pkg-ref>
+    <pkg-ref id="com.octoblu.GatebluService.node.npm.pkg" version="1.0" onConclusion="none">npm.pkg</pkg-ref>
 </installer-gui-script>
