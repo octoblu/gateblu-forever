@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
 <installer-gui-script minSpecVersion="2">
     <pkg-ref id="com.octoblu.GatebluService"/>
-    <pkg-ref id="org.nodejs.pkg"/>
-    <pkg-ref id="org.nodejs.node.npm.pkg"/>
+    <pkg-ref id="com.octoblu.GatebluService.nodejs.pkg"/>
+    <pkg-ref id="com.octoblu.GatebluService.node.npm.pkg"/>
     <options customize="never" require-scripts="false"/>
     <volume-check>
         <allowed-os-versions>
@@ -12,8 +12,8 @@
     <choices-outline>
         <line choice="default">
             <line choice="com.octoblu.GatebluService"/>
-            <line choice="org.nodejs.pkg"/>
-            <line choice="org.nodejs.node.npm.pkg"/>
+            <line choice="com.octoblu.GatebluService.nodejs.pkg"/>
+            <line choice="com.octoblu.GatebluService.node.npm.pkg"/>
         </line>
     </choices-outline>
     <choice id="default"/>
