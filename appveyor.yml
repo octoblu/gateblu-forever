@@ -38,9 +38,9 @@ after_build:
 
 deploy:
   - provider: S3
-    access_key_id: AKIAIT4X4NDGM2WVL6VA
+    access_key_id: AKIAJH2D5IPIRHYJT5IA
     secret_access_key:
-      secure: J01/MZX00MKgxnFXoyiqoHSSwZbccuEfIUhw9yqRErCO0WWv/m3qDAqLe7RaN/E5
+      secure: cFwATEkycF0yVPBsMBevUntX0ylOMsjvSbnaePjbONDOpxV/7QvU7aOt/zoPwHmI
     bucket: gateblu
     folder: gateblu-service
     artifact: S3.GatebluService
