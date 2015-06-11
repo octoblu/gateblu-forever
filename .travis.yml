@@ -1,15 +1,15 @@
 sudo: false
 language: shell
 os:
-  - linux
-  - osx
+- linux
+- osx
 cache:
   bundler: true
   directories:
-    - node_modules
+  - node_modules
 matrix:
   allow_failures:
-    - os: osx
+  - os: osx
 install:
 - if [ "$TRAVIS_OS_NAME" == "osx" ]; then brew install nvm; fi
 - if [ "$TRAVIS_OS_NAME" == "osx" ]; then source $(brew --prefix nvm)/nvm.sh; fi
@@ -18,15 +18,18 @@ install:
 script:
 - if [ "$TRAVIS_OS_NAME" != "osx" ]; then npm test; fi
 after_success:
-  - mkdir -p dpl_s3
-  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then .installer/darwin/build; fi
-  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then mkdir -p dpl_s3/latest; cp .installer/darwin/cache/GatebluService.pkg dpl_s3/latest; fi
-  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then mkdir -p dpl_s3/${TRAVIS_TAG:-$TRAVIS_COMMIT}; cp .installer/darwin/cache/GatebluService.pkg dpl_s3/${TRAVIS_TAG:-$TRAVIS_COMMIT}; fi
+- mkdir -p dpl_s3
+- if [ "$TRAVIS_OS_NAME" == "osx" ]; then .installer/darwin/build; fi
+- if [ "$TRAVIS_OS_NAME" == "osx" ]; then mkdir -p dpl_s3/latest; cp .installer/darwin/cache/GatebluService.pkg
+  dpl_s3/latest; fi
+- if [ "$TRAVIS_OS_NAME" == "osx" ]; then mkdir -p dpl_s3/${TRAVIS_TAG:-$TRAVIS_COMMIT};
+  cp .installer/darwin/cache/GatebluService.pkg dpl_s3/${TRAVIS_TAG:-$TRAVIS_COMMIT};
+  fi
 deploy:
 - provider: s3
-  access_key_id: AKIAIT4X4NDGM2WVL6VA
+  access_key_id: AKIAJH2D5IPIRHYJT5IA
   secret_access_key:
-    secure: "PrLfjRXpzkfJDusaxZJrgbK+2Xgj9+gQNbD//M1dEFfKBQ+HJ7+MRlaz9nrecH/8//hxlZXWbUgg6yAgXItqnbR/W1kY/hk2idmXe8STwx1z6zxMJ+KbIPzwp23Gv31oVXL9+35oeI/dksKPG7FqQxvUcIeFW8TB3GnOrgwCI9g="
+    secure: kbKVia41I8HQRL8HUUlKCzGhHlCLpTGFKrC4ePouT7oygN9L3LTaC45RkVe74QN0P8EeVIIqY/bE8+PUBL0OalFFg7K3hNkwaUe+QDsfvKpb584JZJe+xULk2SBRJ9kIh85j3YOoch9bFKgrGKwwhXLMy5Ujp/aU6aaFi3mZIyU=
   bucket: gateblu
   upload-dir: gateblu-service
   region: us-west-2
@@ -48,4 +51,4 @@ addons:
   code_climate:
     repo_token: 95986ecafdc6a839cf3f7ad924918e1b652c53f28d9f49666bd614d128c6e227
 after_script:
-  - cat coverage/lcov.info | codeclimate
+- cat coverage/lcov.info | codeclimate
