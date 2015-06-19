@@ -1,0 +1,10 @@
+name: gateblu-service
+vendor: Octoblu <snappy@octoblu.com>
+architecture: [amd64, armhf]
+icon: meta/gateblu.svg
+version: 1.0.1
+services:
+ - name: gateblu-service
+   description: "Gateblu connect things to Octoblu"
+   start: start-service.sh
+

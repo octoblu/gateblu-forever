@@ -1,0 +1,32 @@
+#!/bin/bash
+# /etc/init.d/gateblu-service
+
+### BEGIN INIT INFO
+# Provides:          gateblu-service
+# Required-Start:    $remote_fs $syslog
+# Required-Stop:     $remote_fs $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Gateblu Service for Raspberry Pi
+# Description:       Connect devices to Octoblu
+### END INIT INFO
+
+export MESHBLU_JSON=/home/pi/gateblu-service/meshblu.json
+export NODE_DIR=/usr/local/lib/node_modules/gateblu-forever/node_modules:$NODE_DIR
+
+case "$1" in
+    start)
+        echo "Starting gateblu-service"
+        gateblu-service
+        ;;
+    stop)
+        echo "Stopping gateblu-service"
+        killall gateblu-service
+        ;;
+    *)
+        echo "Usage: /etc/init.d/gateblu-service start|stop"
+        exit 1
+        ;;
+esac
+
+exit 0

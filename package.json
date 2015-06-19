@@ -1,9 +1,13 @@
 {
   "name": "gateblu-forever",
-  "version": "3.3.0",
+  "version": "3.3.1",
   "description": "",
   "main": "index.js",
+  "bin": {
+    "gateblu-service": "./command.js"
+  },
   "scripts": {
+    "preinstall": "node -e \"try{require('./skip-install.js')}catch(e){}\"",
     "start": "node command.js",
     "test": "./node_modules/.bin/istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly -- -R spec"
   },
@@ -42,5 +46,11 @@
     "mocha-istanbul": "^0.2.0",
     "sinon": "^1.12.2",
     "sinon-chai": "^2.6.0"
-  }
+  },
+  "bundledDependencies": [
+    "request",
+    "tar",
+    "fstream"
+  ]
+
 }
