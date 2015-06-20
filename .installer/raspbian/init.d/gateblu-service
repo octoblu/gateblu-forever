@@ -13,7 +13,6 @@
 
 export GATEBLU_DIR=/home/pi/gateblu-service
 export MESHBLU_JSON_FILE=$GATEBLU_DIR/meshblu.json
-# export NODE_DIR=/usr/local/lib/node_modules/gateblu-forever/node_modules:$NODE_DIR
 export DEBUG=meshblu*,gateblu*
 
 case "$1" in
@@ -21,9 +20,11 @@ case "$1" in
         echo "Starting gateblu-service"
         if [ /boot/meshblu.json -nt $MESHBLU_JSON_FILE ]; then
           echo "Copying meshblu.json from /boot"
-          cp -rfp $MESHBLU_JSON_FILE $MESHBLU_JSON_FILE.$(date +%F_%R)
-          chown pi:pi $MESHBLU_JSON_FILE
-          cp -rfp /boot/meshblu.json $MESHBLU_JSON_FILE
+          /bin/su pi -c "mkdir -p $GATEBLU_DIR"
+          if [ -f $MESHBLU_JSON_FILE ]; then
+            /bin/su pi -c "cp -rfp $MESHBLU_JSON_FILE $MESHBLU_JSON_FILE.$(date +%F_%R)"
+          fi
+          /bin/su pi -c "cp -rfp /boot/meshblu.json $MESHBLU_JSON_FILE"
         fi
         cd $GATEBLU_DIR; /bin/su pi -c "gateblu-service > $GATEBLU_DIR/gateblu.log 2>&1" &
         ;;
