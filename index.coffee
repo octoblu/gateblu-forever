@@ -33,8 +33,8 @@ class DeviceManager extends EventEmitter
   getDevicePath: (device) =>
     path.join @config.devicePath, device.uuid
 
-  startDevice : (device, callback=->) =>
-    debug 'startDevice', { name: device.name, uuid: device.uuid}
+  spawnChildProcess: (device, callback=->) =>
+    debug 'spawnChildProcess', {name: device.name, uuid: device.uuid}
     devicePath = @getDevicePath device
     @writeMeshbluJSON devicePath, device
 
@@ -67,9 +67,15 @@ class DeviceManager extends EventEmitter
 
     debug 'forever', {uuid: device.uuid, name: device.name}, 'starting'
     child.start()
-    @deviceProcesses[device.uuid] = child
-    @emit 'start', device
-    callback()
+    callback null, child
+
+  startDevice : (device, callback=->) =>
+    @stopDevice device, =>
+      debug 'startDevice', {name: device.name, uuid: device.uuid}
+      @spawnChildProcess device, (error, child) =>
+        @deviceProcesses[device.uuid] = child
+        @emit 'start', device
+        callback()
 
   installConnector : (connector, callback=->) =>
     debug 'installConnector', connector
@@ -159,7 +165,7 @@ class DeviceManager extends EventEmitter
       debug 'killing process for', device.uuid
       deviceProcess.killSignal = 'SIGINT'
       deviceProcess.stop()
-      callback null, device.uuid
+      return callback null, device.uuid
 
     debug "process for #{device.uuid} wasn't running. Removing record."
     delete @deviceProcesses[device.uuid]
