@@ -18,9 +18,9 @@ export DEBUG=meshblu*,gateblu*
 case "$1" in
     start)
         echo "Starting gateblu-service"
+        /bin/su pi -c "mkdir -p $GATEBLU_DIR"
         if [ /boot/meshblu.json -nt $MESHBLU_JSON_FILE ]; then
           echo "Copying meshblu.json from /boot"
-          /bin/su pi -c "mkdir -p $GATEBLU_DIR"
           if [ -f $MESHBLU_JSON_FILE ]; then
             /bin/su pi -c "cp -rfp $MESHBLU_JSON_FILE $MESHBLU_JSON_FILE.$(date +%F_%R)"
           fi
