@@ -44,7 +44,7 @@ If (!(Test-Path $cache_dir)){
 
 @(
     'node.exe'
-    'npm-2.6.0.zip'
+    'npm-2.10.1.zip'
 ) |
 Where-Object { (!(Test-Path $cache_dir\$_)) } |
 ForEach-Object {
@@ -57,11 +57,11 @@ ForEach-Object {
 If (!(Test-Path $cache_dir\npm)){
   echo "Installing npm ($cache_dir)..."
   pushd $cache_dir
-  7z -y x $cache_dir\npm-2.6.0.zip | Out-Null
+  7z -y x $cache_dir\npm-2.10.1.zip | Out-Null
   popd
-  Copy-Item $cache_dir\npm-2.6.0\bin\npm.cmd $cache_dir
-  echo "Copying npm-2.6.0"
-  robocopy $cache_dir\npm-2.6.0 $cache_dir\node_modules\npm /S /NFL /NDL /NS /NC /NJH /NJS
+  Copy-Item $cache_dir\npm-2.10.1\bin\npm.cmd $cache_dir
+  echo "Copying npm-2.10.1"
+  robocopy $cache_dir\npm-2.10.1 $cache_dir\node_modules\npm /S /NFL /NDL /NS /NC /NJH /NJS
 }
 
 echo "Copying to $tmp_dir..."
