@@ -6,6 +6,11 @@ OUTPUT_DIR=$INSTALLER_DIR/output
 
 mkdir -p $CACHE_DIR
 
+if [ "$KEY_PASSWORD" == "" ]; then
+  echo "KEY_PASSWORD is blank"
+  exit 1
+fi
+
 if [ ! -f $CACHE_DIR/node.pkg ]; then
   pushd $CACHE_DIR
   curl -sO https://s3-us-west-2.amazonaws.com/gateblu/node-binaries/darwin/node.pkg
@@ -38,5 +43,23 @@ productbuild --distribution $INSTALLER_DIR/distribution.plist \
   --resources $INSTALLER_DIR \
   --package-path $CACHE_DIR \
   $CACHE_DIR/GatebluService.pkg
+
+echo "### create keychain"
+security create-keychain -p travis mac-build.keychain
+security import $INSTALLER_DIR/certs/apple.cer -k ~/Library/Keychains/mac-build.keychain -T /usr/bin/codesign
+security import $INSTALLER_DIR/certs/dist.p12 -k ~/Library/Keychains/mac-build.keychain -P $KEY_PASSWORD -T /usr/bin/codesign
+
+identity="A5D9EE988CEFE25C6D04679D00F9C8C60B63C240"
+
+echo "### signing package"
+
+codesign --force --verify --verbose --keychain ~/Library/Keychains/mac-build.keychain --sign "$identity" "$CACHE_DIR/GatebluService.pkg"
+
+echo "### verifying signature"
+codesign -vvv -d "$CACHE_DIR/GatebluService.pkg"
+# sudo spctl -a -vvvv "$PLATFORM_APP_DIR"
+
+echo "### remove keychain"
+security delete-keychain mac-build.keychain
 
 popd
