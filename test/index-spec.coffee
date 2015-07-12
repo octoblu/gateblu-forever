@@ -14,9 +14,3 @@ describe 'DeviceManager', ->
 
     it 'should call installConnector', ->
       expect(@sut.installConnector).to.have.been.calledWith 'meshblu:something'
-
-    it 'should call setupDevice', ->
-      expect(@sut.setupDevice).to.have.been.calledWith uuid: '1234', connector: 'meshblu:something'
-
-    it 'should call startDevice', ->
-      expect(@sut.setupDevice).to.have.been.calledWith uuid: '1234', connector: 'meshblu:something'
