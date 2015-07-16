@@ -8,13 +8,15 @@
 
 Gateblu-Forever will automatically register itself with meshblu.octoblu.com on startup.
 
-```
-npm install
-```
+
+## Install
 
 ```
-npm start
+npm install -g gateblu-forever
 ```
+
+## Config
+If `meshblu.json` does not exist, Gateblu will automatically register a new device and create the file.
 
 Sample `meshblu.json`
 
@@ -29,4 +31,23 @@ Sample `meshblu.json`
 }
 ```
 
---- Octoblu is awesome ---
+## Usage
+
+```
+gateblu-service
+```
+
+### Debug Output
+
+```
+DEBUG=* gateblu-service
+```
+
+### Skip Connector Install
+```
+gateblu-service --skip-install
+```
+You may also use environment variables
+```
+GATEBLU_SKIP_INSTALL=true gateblu-service
+```

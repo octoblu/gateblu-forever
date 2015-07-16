@@ -89,7 +89,9 @@ class DeviceManager extends EventEmitter
       debug "installConnector: #{connector} already installed this session. skipping."
       return callback()
 
-    return callback() if @config.skipInstall
+    if @config.skipInstall
+      debug 'skipping install', connector
+      return callback()
 
     connectorManager = new ConnectorManager @config.tmpPath, connector
     connectorManager.install (error) =>

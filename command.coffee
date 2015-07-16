@@ -54,7 +54,7 @@ class GatebluCommand
       .option '--skip-install', 'Skip npm install'
       .parse process.argv
 
-    @skipInstall = commander.skipInstall
+    @skipInstall = commander.skipInstall ? (process.env.GATEBLU_SKIP_INSTALL?.toLocaleLowerCase() == 'true')
 
   die: (error) =>
     @deviceManager.shutdown =>
