@@ -1,6 +1,6 @@
 {
   "name": "gateblu-forever",
-  "version": "3.6.1",
+  "version": "3.7.0",
   "description": "",
   "main": "index.js",
   "bin": {
@@ -31,7 +31,7 @@
     "forever-monitor": "^1.5.2",
     "fs-extra": "^0.18.4",
     "fstream": "^1.0.7",
-    "gateblu": "^4.4.0",
+    "gateblu": "^4.5.0",
     "homedir": "^0.6.0",
     "lodash": "^3.9.3",
     "meshblu-config": "^2.0.0",
