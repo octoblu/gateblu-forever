@@ -1,14 +1,15 @@
-'use strict'
 _ = require 'lodash'
 fs = require 'fs-extra'
-debug = require('debug')('gateblu:command')
 path = require 'path'
+debug = require('debug')('gateblu:command')
+colors = require 'colors'
 Gateblu = require 'gateblu'
-DeviceManager = require './index'
-CONFIG_PATH = process.env.MESHBLU_JSON_FILE or './meshblu.json'
 homedir = require 'homedir'
+commander = require 'commander'
+DeviceManager = require './index'
 MeshbluConfig = require 'meshblu-config'
 
+CONFIG_PATH = process.env.MESHBLU_JSON_FILE ? './meshblu.json'
 OLD_CONFIG_PATH = "#{homedir()}/.config/gateblu/meshblu.json"
 DEFAULT_OPTIONS =
   nodePath: process.env.GATEBLU_NODE_PATH ? ''
@@ -29,28 +30,40 @@ class GatebluCommand
 
   run: =>
     options = @getOptions()
+    @parseOptions()
+    options = _.extend {}, @getOptions(), skipInstall: @skipInstall
     debug 'Starting Device Manager with options', options
-    @deviceManager = new DeviceManager(options)
-    @gateblu = new Gateblu(options, @deviceManager)
+    @deviceManager = new DeviceManager options
+    @gateblu = new Gateblu options, @deviceManager
     process.on 'exit', (error) =>
-      if error
-        console.error error.message, error.stack
-      debug 'exit', error
-      @shutdownDeviceManager()
+      @die error if error?
 
     process.on 'SIGINT', =>
       debug 'SIGINT'
       process.stdin.resume()
-      @shutdownDeviceManager()
+      @deviceManager.shutdown =>
+        process.exit 0
 
     process.on 'uncaughtException', (error) =>
-      console.error error.message, error.stack
       debug 'uncaughtException', error
-      @shutdownDeviceManager()
+      @die error
 
-  shutdownDeviceManager: =>
+  parseOptions: =>
+    commander
+      .usage '[options]'
+      .option '--skip-install', 'Skip npm install'
+      .parse process.argv
+
+    @skipInstall = commander.skipInstall
+
+  die: (error) =>
     @deviceManager.shutdown =>
-      process.exit 0
+      if 'Error' == typeof error
+        console.error colors.red error.message
+        console.error error.stack
+      else
+        console.error colors.red arguments...
+      process.exit 1
 
   saveOptions: (options) ->
     debug 'saveOptions', '\n', options

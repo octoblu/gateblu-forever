@@ -83,11 +83,13 @@ class DeviceManager extends EventEmitter
     if _.isEmpty(connector)
       return callback()
 
-    connector = _.last connector.split(':')
+    connector = _.last connector?.split(':')
 
     if @connectorsInstalled[connector]
       debug "installConnector: #{connector} already installed this session. skipping."
       return callback()
+
+    return callback() if @config.skipInstall
 
     connectorManager = new ConnectorManager @config.tmpPath, connector
     connectorManager.install (error) =>

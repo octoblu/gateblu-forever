@@ -24,10 +24,13 @@
   "dependencies": {
     "async": "^1.0.0",
     "coffee-script": "^1.9.2",
+    "colors": "^1.1.2",
+    "commander": "^2.8.1",
     "debug": "^2.1.1",
     "forever": "^0.13.0",
     "forever-monitor": "^1.5.2",
     "fs-extra": "^0.18.4",
+    "fstream": "^1.0.7",
     "gateblu": "^4.4.0",
     "homedir": "^0.6.0",
     "lodash": "^3.9.3",
@@ -36,7 +39,8 @@
     "npm": "^2.13.0",
     "request": "^2.58.0",
     "rimraf": "^2.3.4",
-    "semver-compare": "^1.0.0"
+    "semver-compare": "^1.0.0",
+    "tar": "^2.1.1"
   },
   "optionalDependencies": {
     "commander": "^2.3.0"
