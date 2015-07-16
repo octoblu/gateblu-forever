@@ -9,6 +9,7 @@ async = require 'async'
 debug = require('debug')('gateblu:deviceManager')
 url = require 'url'
 MeshbluHttp = require 'meshblu-http'
+ConnectorManager = require './connector-manager'
 
 class DeviceManager extends EventEmitter
   constructor: (@config, dependencies={}) ->
@@ -88,36 +89,12 @@ class DeviceManager extends EventEmitter
       debug "installConnector: #{connector} already installed this session. skipping."
       return callback()
 
-    nodeModulesDir = path.join @config.tmpPath, 'node_modules'
-    fs.mkdirpSync @config.tmpPath unless fs.existsSync @config.tmpPath
-    connectorPath = path.join nodeModulesDir, connector
-    npmMethod = "install"
-    npmMethod = "update" if fs.existsSync "#{connectorPath}/package.json"
-    prefix = ''
-    prefix = 'cmd.exe /c ' if process.platform == 'win32'
-    npm_command = "#{prefix} npm --prefix=. #{npmMethod} #{connector}"
-    debug "npm install: #{npm_command}, cwd: #{@config.tmpPath}"
-    exec(npm_command,
-      cwd: @config.tmpPath
-      (error, stdout, stderr) =>
-        if error?
-          debug 'npm install error:', error
-          console.error 'Error: ', error
-          @emit 'stderr', error
-          return callback()
-
-        if stderr?
-          @emit 'npm:stderr', stderr.toString()
-          debug 'npm:stderr', stderr.toString()
-
-        if stdout?
-          @emit 'npm:stdout', stdout.toString()
-          debug 'npm:stdout', stdout.toString()
-
-        debug 'connector installed', connector
-        @connectorsInstalled[connector] = true
-        callback()
-    )
+    connectorManager = new ConnectorManager @config.tmpPath, connector
+    connectorManager.install (error) =>
+      return callback error if error?
+      debug 'connector installed', connector
+      @connectorsInstalled[connector] = true
+      callback()
 
   setupDevice: (device, callback) =>
     debug 'setupDevice', uuid: device.uuid, name: device.name

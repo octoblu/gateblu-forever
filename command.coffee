@@ -7,16 +7,13 @@ Gateblu = require 'gateblu'
 DeviceManager = require './index'
 CONFIG_PATH = process.env.MESHBLU_JSON_FILE or './meshblu.json'
 homedir = require 'homedir'
+MeshbluConfig = require 'meshblu-config'
 
 OLD_CONFIG_PATH = "#{homedir()}/.config/gateblu/meshblu.json"
 DEFAULT_OPTIONS =
-  server: process.env.MESHBLU_SERVER or 'meshblu.octoblu.com'
-  port: process.env.MESHBLU_PORT or 443
-  uuid: process.env.MESHBLU_UUID
-  token: process.env.MESHBLU_TOKEN
-  nodePath: process.env.GATEBLU_NODE_PATH or ''
-  devicePath: process.env.GATEBLU_DEVICE_PATH or 'devices'
-  tmpPath: process.env.GATEBLU_TMP_PATH or 'tmp'
+  nodePath: process.env.GATEBLU_NODE_PATH ? ''
+  devicePath: process.env.GATEBLU_DEVICE_PATH ? './devices'
+  tmpPath: process.env.GATEBLU_TMP_PATH ? './tmp'
 
 class GatebluCommand
   getOptions: =>
@@ -27,14 +24,14 @@ class GatebluCommand
         oldOptions = require OLD_CONFIG_PATH
         options = _.extend options, uuid: oldOptions.uuid, token: oldOptions.token
       @saveOptions options
-    _.defaults _.clone(require(CONFIG_PATH)), options
+    meshbluConfig = new MeshbluConfig filename: CONFIG_PATH
+    _.defaults _.clone(meshbluConfig.toJSON()), options
 
   run: =>
     options = @getOptions()
     debug 'Starting Device Manager with options', options
     @deviceManager = new DeviceManager(options)
     @gateblu = new Gateblu(options, @deviceManager)
-    @gateblu.on 'gateblu:config', @saveOptions
     process.on 'exit', (error) =>
       if error
         console.error error.message, error.stack
