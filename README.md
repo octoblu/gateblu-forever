@@ -6,7 +6,7 @@
 [![Test Coverage](https://codeclimate.com/github/octoblu/gateblu-forever/badges/coverage.svg)](https://codeclimate.com/github/octoblu/gateblu-forever)
 
 
-Gateblu-Forever will automatically register itself with meshblu.octoblu.com on startup.
+Gateblu-Forever requires a meshblu.json to start.
 
 
 ## Install
@@ -16,7 +16,6 @@ npm install -g gateblu-forever
 ```
 
 ## Config
-If `meshblu.json` does not exist, Gateblu will automatically register a new device and create the file.
 
 Sample `meshblu.json`
 
