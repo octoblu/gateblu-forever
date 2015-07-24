@@ -1,6 +1,6 @@
 {
   "name": "gateblu-forever",
-  "version": "3.7.1",
+  "version": "3.7.2",
   "description": "",
   "main": "index.js",
   "bin": {
@@ -34,6 +34,7 @@
     "gateblu": "^4.5.0",
     "homedir": "^0.6.0",
     "lodash": "^3.9.3",
+    "meshblu": "^1.30.0",
     "meshblu-config": "^2.0.0",
     "meshblu-http": "^2.0.1",
     "npm": "^2.13.0",
