@@ -18,7 +18,7 @@ class ConnectorManager
 
       @isUpdateAvailable (updateAvailable) =>
         debug 'isUpdateAvailable', @connector, updateAvailable
-        return updateConnector callback if updateAvailable
+        return @updateConnector callback if updateAvailable
         callback()
 
   installConnector: (callback=->) =>
