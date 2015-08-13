@@ -1,6 +1,6 @@
 {
   "name": "gateblu-forever",
-  "version": "3.7.3",
+  "version": "4.0.0",
   "description": "",
   "main": "index.js",
   "bin": {
@@ -22,7 +22,7 @@
   },
   "homepage": "https://github.com/octoblu/gateblu-forever",
   "dependencies": {
-    "async": "^1.0.0",
+    "async": "^1.4.2",
     "coffee-script": "^1.9.2",
     "colors": "^1.1.2",
     "commander": "^2.8.1",
@@ -31,7 +31,7 @@
     "forever-monitor": "^1.5.2",
     "fs-extra": "^0.18.4",
     "fstream": "^1.0.7",
-    "gateblu": "^4.5.0",
+    "gateblu": "^5.0.0",
     "homedir": "^0.6.0",
     "lodash": "^3.9.3",
     "meshblu": "^1.30.0",

@@ -18,17 +18,17 @@ class DeviceManager extends EventEmitter
     @connectorsInstalled = {}
 
   addDevice: (device, callback=->) =>
-    debug 'addDevice', device
+    debug 'addDevice', device.uuid
     async.series [
-      (callback) => @installConnector device.connector, callback
-      (callback) => @setupDevice device, callback
+      async.apply @installConnector, device.connector
+      async.apply @setupDevice, device
     ], callback
 
   removeDevice: (device, callback=->) =>
-    debug 'removeDevice', device
+    debug 'removeDevice', device.uuid
     async.series [
-      (callback) => @stopDevice device, callback
-      (callback) => @removeDeletedDeviceDirectory device, callback
+      async.apply @stopDevice, device
+      async.apply @removeDeletedDeviceDirectory, device
     ], callback
 
   getDevicePath: (device) =>
@@ -128,6 +128,7 @@ class DeviceManager extends EventEmitter
       device,
       server: @config.server, port: @config.port
 
+    deviceConfig = _.pick deviceConfig, 'uuid', 'token', 'server', 'port'
     meshbluConfig = JSON.stringify deviceConfig, null, 2
     debug 'writing meshblu.json', devicePath
     fs.writeFileSync meshbluFilename, meshbluConfig

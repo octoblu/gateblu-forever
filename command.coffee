@@ -46,6 +46,7 @@ class GatebluCommand
 
     process.on 'uncaughtException', (error) =>
       debug 'uncaughtException', error
+      console.error error?.stack?.join("\n")
       @die error
 
   parseOptions: =>
