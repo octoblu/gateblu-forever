@@ -30,7 +30,7 @@ class ConnectorManager
   updateConnector: (callback=->) =>
     npm.load production: true, =>
       debug 'updateConnector', @connector, @installPath
-      npm.commands.update @installPath, [@connector], (error) =>
+      npm.commands.install @installPath, [@connector], (error) =>
         callback error
 
   loadPackageJSON: (callback=->) =>
