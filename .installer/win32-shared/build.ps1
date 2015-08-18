@@ -84,7 +84,7 @@ Remove-Item $tmp_dir\GatebluServiceTray.zip -Force -Recurse
 
 echo "Installing node_modules..."
 pushd $tmp_dir
-. "$cache_dir\npm.cmd" install crossyio-unpack
+. "$cache_dir\npm.cmd" install --prefix . crossyio-unpack
 . "$cache_dir\npm.cmd" install -s --production
 popd
 
