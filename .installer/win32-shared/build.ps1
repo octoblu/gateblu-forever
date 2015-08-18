@@ -1,6 +1,6 @@
 param([String]$platform)
 
-$ErrorActionPreference = "Stop"
+$ErrorActionPreference = "SilentlyContinue"
 
 function Get-ScriptDirectory
 {
