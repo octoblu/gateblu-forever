@@ -1,6 +1,6 @@
 {
   "name": "gateblu-forever",
-  "version": "4.0.3",
+  "version": "4.1.0",
   "description": "",
   "main": "index.js",
   "bin": {
@@ -28,11 +28,12 @@
     "commander": "^2.8.1",
     "crossyio-unpack": "^1.0.0",
     "debug": "^2.1.1",
+    "eventemitter2": "^0.4.14",
     "forever": "^0.13.0",
     "forever-monitor": "^1.5.2",
     "fs-extra": "^0.18.4",
     "fstream": "^1.0.7",
-    "gateblu": "^5.0.1",
+    "gateblu": "^5.1.0",
     "homedir": "^0.6.0",
     "lodash": "^3.9.3",
     "meshblu": "^1.30.0",

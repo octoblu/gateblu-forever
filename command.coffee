@@ -26,15 +26,22 @@ class GatebluCommand
         options = _.extend options, uuid: oldOptions.uuid, token: oldOptions.token
       @saveOptions options
     meshbluConfig = new MeshbluConfig filename: CONFIG_PATH
+    @parseOptions()
+    options.skipInstall = @skipInstall
     _.defaults _.clone(meshbluConfig.toJSON()), options
 
   run: =>
     options = @getOptions()
-    @parseOptions()
-    options = _.extend {}, @getOptions(), skipInstall: @skipInstall
     debug 'Starting Device Manager with options', options
     @deviceManager = new DeviceManager options
     @gateblu = new Gateblu options, @deviceManager
+
+    @deviceManager.on 'error', (error) =>
+      @die error if error?
+
+    @gateblu.on 'error', (error) =>
+      @die error if error?
+
     process.on 'exit', (error) =>
       @die error if error?
 
@@ -45,8 +52,6 @@ class GatebluCommand
         process.exit 0
 
     process.on 'uncaughtException', (error) =>
-      debug 'uncaughtException', error
-      console.error error?.stack?.join("\n")
       @die error
 
   parseOptions: =>

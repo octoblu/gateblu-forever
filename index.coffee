@@ -1,17 +1,17 @@
-util = require 'util'
-{EventEmitter} = require 'events'
-fs = require 'fs-extra'
-path = require 'path'
-forever = require 'forever-monitor'
-{exec} = require 'child_process'
 _ = require 'lodash'
-async = require 'async'
-debug = require('debug')('gateblu-forever:deviceManager')
+fs = require 'fs-extra'
 url = require 'url'
+path = require 'path'
+util = require 'util'
+async = require 'async'
+debug = require('debug')('gateblu-forever:device-manager')
+{exec} = require 'child_process'
+forever = require 'forever-monitor'
+{EventEmitter2} = require 'eventemitter2'
 MeshbluHttp = require 'meshblu-http'
 ConnectorManager = require './connector-manager'
 
-class DeviceManager extends EventEmitter
+class DeviceManager extends EventEmitter2
   constructor: (@config, dependencies={}) ->
     @deviceProcesses = {}
     @runningDevices = []
@@ -37,51 +37,59 @@ class DeviceManager extends EventEmitter
   spawnChildProcess: (device, callback=->) =>
     debug 'spawnChildProcess', {name: device.name, uuid: device.uuid}
     devicePath = @getDevicePath device
-    @writeMeshbluJSON devicePath, device
+    @writeMeshbluJSON devicePath, device, (error) =>
+      return callback error if error?
 
-    pathSep = ':'
-    pathSep = ';' if process.platform == 'win32'
+      pathSep = ':'
+      pathSep = ';' if process.platform == 'win32'
 
-    foreverOptions =
-      max: 1
-      silent: true
-      options: []
-      cwd: devicePath
-      logFile: path.join devicePath, 'forever.log'
-      outFile: path.join devicePath, 'forever.stdout'
-      errFile: path.join devicePath, 'forever.stderr'
-      command: 'node'
-      checkFile: false
+      env =
+        'DEBUG' : process.env['DEBUG']
 
-    child = new (forever.Monitor)('command.js', foreverOptions)
-    child.on 'stderr', (data) =>
-      debug 'stderr', device.uuid, data.toString()
-      @emit 'stderr', data.toString(), device
+      foreverOptions =
+        max: 1
+        silent: true
+        args: []
+        env: env
+        cwd: devicePath
+        logFile: path.join devicePath, 'forever.log'
+        outFile: path.join devicePath, 'forever.stdout'
+        errFile: path.join devicePath, 'forever.stderr'
+        command: 'node'
+        checkFile: false
 
-    child.on 'stdout', (data) =>
-      debug 'stdout', device.uuid, data.toString()
-      @emit 'stdout', data.toString(), device
+      child = new (forever.Monitor)('command.js', foreverOptions)
+      child.on 'stderr', (data) =>
+        debug 'stderr', device.uuid, data.toString()
+        @emit 'stderr', data.toString(), device
 
-    child.on 'stop', =>
-      debug "process for #{device.uuid} stopped."
-      delete @deviceProcesses[device.uuid]
+      child.on 'stdout', (data) =>
+        debug 'stdout', device.uuid, data.toString()
+        @emit 'stdout', data.toString(), device
 
-    debug 'forever', {uuid: device.uuid, name: device.name}, 'starting'
-    child.start()
-    callback null, child
+      child.on 'stop', =>
+        debug "process for #{device.uuid} stopped."
+        delete @deviceProcesses[device.uuid]
+
+      debug 'forever', {uuid: device.uuid, name: device.name}, 'starting'
+      child.start()
+      callback null, child
 
   startDevice : (device, callback=->) =>
-    @stopDevice device, =>
+    @stopDevice device, (error) =>
+      return callback error if error?
+
       debug 'startDevice', {name: device.name, uuid: device.uuid}
       @spawnChildProcess device, (error, child) =>
+        return callback error if error?
+
         @deviceProcesses[device.uuid] = child
         @emit 'start', device
         callback()
 
   installConnector : (connector, callback=->) =>
     debug 'installConnector', connector
-    if _.isEmpty(connector)
-      return callback()
+    return callback new Error('Invalid connector') if _.isEmpty connector
 
     connector = _.last connector?.split(':')
 
@@ -102,27 +110,25 @@ class DeviceManager extends EventEmitter
 
   setupDevice: (device, callback) =>
     debug 'setupDevice', uuid: device.uuid, name: device.name
+    return callback new Error('Invalid connector') if _.isEmpty device.connector
 
     devicePath = @getDevicePath device
     connectorPath = path.join @config.tmpPath, 'node_modules', device.connector
 
     debug 'path', devicePath
     debug 'connectorPath', connectorPath
+    debug 'copying files', devicePath
 
-    try
-      debug 'copying files', devicePath
-      fs.removeSync devicePath
-      fs.copy connectorPath, devicePath, =>
+    fs.remove devicePath, (error) =>
+      return callback error if error?
+
+      fs.copy connectorPath, devicePath, (error) =>
+        return callback error if error?
+
         debug 'done copying', devicePath
         callback()
 
-    catch error
-      console.error error
-      @emit 'stderr', error
-      debug 'forever error:', error
-      _.defer -> callback new Error('copy error')
-
-  writeMeshbluJSON: (devicePath, device) =>
+  writeMeshbluJSON: (devicePath, device, callback=->) =>
     meshbluFilename = path.join devicePath, 'meshblu.json'
     deviceConfig = _.extend {},
       device,
@@ -131,7 +137,7 @@ class DeviceManager extends EventEmitter
     deviceConfig = _.pick deviceConfig, 'uuid', 'token', 'server', 'port'
     meshbluConfig = JSON.stringify deviceConfig, null, 2
     debug 'writing meshblu.json', devicePath
-    fs.writeFileSync meshbluFilename, meshbluConfig
+    fs.writeFile meshbluFilename, meshbluConfig, callback
 
   shutdown: (callback=->) =>
     async.eachSeries _.keys(@deviceProcesses), (uuid, callback) =>
@@ -154,8 +160,9 @@ class DeviceManager extends EventEmitter
     callback null, device.uuid
 
   removeDeletedDeviceDirectory: (device, callback) =>
-    fs.remove @getDevicePath(device), (error) ->
-      console.error error if error?
-      callback()
+    devicePath = @getDevicePath device
+    fs.exists devicePath, (exists) =>
+      return callback() unless exists
+      fs.remove devicePath, callback
 
 module.exports = DeviceManager
