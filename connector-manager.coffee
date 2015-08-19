@@ -46,8 +46,9 @@ class ConnectorManager
 
   isUpdateAvailable: (callback=->) =>
     @loadPackageJSON (error, packageJSON) =>
+      return callback false if error?
       request.get "https://registry.npmjs.org/#{@connector}", json: true, (error, response, body) =>
-        callback false if error?
+        return callback false if error?
         callback cmp(body?['dist-tags']?.latest, packageJSON.version) > 0
 
 module.exports = ConnectorManager
