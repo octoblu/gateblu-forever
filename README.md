@@ -1,13 +1,15 @@
 # gateblu-forever
 
+Implementation of Gateblu that uses `forever` to manage device processes.
+
 [![Build Status](https://travis-ci.org/octoblu/gateblu-forever.svg?branch=master)](https://travis-ci.org/octoblu/gateblu-forever)
 [![Build status](https://ci.appveyor.com/api/projects/status/v12s4x3xaso35ubq?svg=true)](https://ci.appveyor.com/project/OctobluInc/gateblu-forever)
 [![Code Climate](https://codeclimate.com/github/octoblu/gateblu-forever/badges/gpa.svg)](https://codeclimate.com/github/octoblu/gateblu-forever)
 [![Test Coverage](https://codeclimate.com/github/octoblu/gateblu-forever/badges/coverage.svg)](https://codeclimate.com/github/octoblu/gateblu-forever)
-
+[![npm version](https://badge.fury.io/js/gateblu-forever.svg)](http://badge.fury.io/js/gateblu-forever)
+[![Gitter](https://badges.gitter.im/octoblu/help.svg)](https://gitter.im/octoblu/help)
 
 Gateblu-Forever requires a meshblu.json to start.
-
 
 ## Install
 
@@ -19,7 +21,7 @@ npm install -g gateblu-forever
 
 Sample `meshblu.json`
 
-```
+```json
 {
   "server": "meshblu.octoblu.com",
   "port": "80",
