@@ -27,6 +27,12 @@ $tmp_dir = [io.path]::GetTempFileName()
 $wix_template_dir = "$shared_dir\wix"
 $wix_dir = "C:\Program Files (x86)\WiX Toolset v3.9\bin"
 
+if($env:APPVEYOR_REPO_TAG_NAME){
+  $gateblu_version=$env:APPVEYOR_REPO_TAG_NAME
+} else {
+  $gateblu_version='latest'
+}
+
 @(
     $output_dir
     $tmp_dir
@@ -88,9 +94,11 @@ pushd $tmp_dir
 . "$cache_dir\npm.cmd" install -s --production
 popd
 
+$gateblu_legal_version = "$gateblu_version" -replace 'v', ''
+
 #Generate the installer
 . $wix_dir\heat.exe dir $tmp_dir -srd -dr INSTALLDIR -cg MainComponentGroup -out $shared_dir\wix\directory.wxs -ke -sfrag -gg -var var.SourceDir -sreg -scom
-. $wix_dir\candle.exe -dCacheDir="$cache_dir" -dSourceDir="$tmp_dir" $wix_template_dir\*.wxs -o $output_dir\\ -ext WiXUtilExtension
+. $wix_dir\candle.exe -dCacheDir="$cache_dir" -dSourceDir="$tmp_dir" -dProductVersion="$gateblu_legal_version" $wix_template_dir\*.wxs -o $output_dir\\ -ext WiXUtilExtension
 . $wix_dir\light.exe -o $output_dir\GatebluService-$platform.msi $output_dir\*.wixobj -cultures:en-US -ext WixUIExtension.dll -ext WiXUtilExtension
 
 # Optional digital sign the certificate.

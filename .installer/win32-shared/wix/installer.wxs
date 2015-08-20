@@ -2,15 +2,17 @@
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
      xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
 
-  <Product Id="D87C7EDF-24E3-4509-AB1A-237E1BCBD89C"
+  <Product Id="*"
           UpgradeCode="381835F6-B008-45AF-B062-4FF2F972AE6D"
-          Language='1033' Codepage='1252' Version='1.0.0'
+          Language='1033' Codepage='1252' Version='$(var.ProductVersion)'
           Name="GatebluService"
           Manufacturer='Octoblu'>
 
     <Package Id='*' Keywords='Installer' Description="Octoblu IOT Gateway Service"
           Comments='Blaaaa' Manufacturer='Octoblu'
           InstallerVersion='100' Languages='1033' Compressed='yes' SummaryCodepage='1252' />
+
+    <MajorUpgrade DowngradeErrorMessage="Can’t downgrade." />
 
     <Media Id='1' EmbedCab='yes' Cabinet="main.cab" />
 
