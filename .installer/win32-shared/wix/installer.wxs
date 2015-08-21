@@ -75,7 +75,7 @@
     <Property Id="WIXUI_INSTALLDIR" Value="INSTALLDIR" />
 
     <UIRef Id="WixUI" />
-
+    <Property Id="ALLUSERS" Value="1"></Property>
     <Property Id="REBOOT" Value="Force"></Property>
   </Product>
 </Wix>
