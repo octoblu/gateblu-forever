@@ -32,6 +32,7 @@ if($env:APPVEYOR_REPO_TAG_NAME){
 } else {
   $gateblu_version='latest'
 }
+$gateblu_legal_version = "$gateblu_version" -replace 'v', ''
 
 @(
     $output_dir
@@ -93,8 +94,6 @@ pushd $tmp_dir
 . "$cache_dir\npm.cmd" install --prefix $tmp_dir crossyio-unpack
 . "$cache_dir\npm.cmd" install -s --production
 popd
-
-$gateblu_legal_version = "$gateblu_version" -replace 'v', ''
 
 #Generate the installer
 . $wix_dir\heat.exe dir $tmp_dir -srd -dr INSTALLDIR -cg MainComponentGroup -out $shared_dir\wix\directory.wxs -ke -sfrag -gg -var var.SourceDir -sreg -scom
