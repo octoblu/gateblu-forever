@@ -10,6 +10,8 @@ forever = require 'forever-monitor'
 {EventEmitter2} = require 'eventemitter2'
 MeshbluHttp = require 'meshblu-http'
 ConnectorManager = require './connector-manager'
+rimraf = require 'rimraf'
+
 
 class DeviceManager extends EventEmitter2
   constructor: (@config, dependencies={}) ->
@@ -103,7 +105,11 @@ class DeviceManager extends EventEmitter2
 
     connectorManager = new ConnectorManager @config.tmpPath, connector
     connectorManager.install (error) =>
-      return callback error if error?
+      if error?
+        debug 'install error', 'doing rimraf on', @config.tmpPath, '/node_modules/', connector
+        rimraf @config.tmpPath + '/node_modules/' + connector, (error) =>
+          debug 'unable to delete tmpPath!', error
+        return callback error
       debug 'connector installed', connector
       @connectorsInstalled[connector] = true
       callback()
