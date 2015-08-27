@@ -12,22 +12,44 @@ MeshbluHttp = require 'meshblu-http'
 ConnectorManager = require './connector-manager'
 rimraf = require 'rimraf'
 
-
 class DeviceManager extends EventEmitter2
   constructor: (@config, dependencies={}) ->
     @deviceProcesses = {}
     @runningDevices = []
     @connectorsInstalled = {}
+    @loggerUuid = process.env.GATEBLU_LOGGER_UUID || '4dd6d1a8-0d11-49aa-a9da-d2687e8f9caf'
 
-  addDevice: (device, callback=->) =>
-    debug 'addDevice', device.uuid
+  sendLogMessage: (workflow, state, device, error) =>
+    # @meshbluConnection.message
+    #   devices: [ @loggerUuid ]
+    #   payload:
+    #     application: 'gateblu-forever'
+    #     gatebluUuid: @config?.uuid
+    #     deviceUuid: device?.uuid
+    #     connector: device?.connector
+    #     state: state
+    #     workflow: workflow
+    #     error: error
+
+  generateLogCallback : (callback=(->), workflow, device) =>
+    debug workflow, device?.uuid, device?.name
+    @sendLogMessage workflow, 'begin', device
+    return (error) =>
+      if error?
+        @sendLogMessage workflow, 'error', device, error
+      else
+        @sendLogMessage workflow, 'end', device
+      callback error
+
+  addDevice: (device, _callback=->) =>
+    callback = @generateLogCallback _callback, 'add-device', device
     async.series [
       async.apply @installConnector, device.connector
       async.apply @setupDevice, device
     ], callback
 
-  removeDevice: (device, callback=->) =>
-    debug 'removeDevice', device.uuid
+  removeDevice: (device, _callback=->) =>
+    callback = @generateLogCallback _callback, 'remove-device', device
     async.series [
       async.apply @stopDevice, device
       async.apply @removeDeletedDeviceDirectory, device
@@ -36,8 +58,8 @@ class DeviceManager extends EventEmitter2
   getDevicePath: (device) =>
     path.join @config.devicePath, device.uuid
 
-  spawnChildProcess: (device, callback=->) =>
-    debug 'spawnChildProcess', {name: device.name, uuid: device.uuid}
+  spawnChildProcess: (device, _callback=->) =>
+    callback = @generateLogCallback _callback, 'spawn-child-process', device
     devicePath = @getDevicePath device
     @writeMeshbluJSON devicePath, device, (error) =>
       return callback error if error?
@@ -77,7 +99,8 @@ class DeviceManager extends EventEmitter2
       child.start()
       callback null, child
 
-  startDevice : (device, callback=->) =>
+  startDevice : (device, _callback=->) =>
+    callback = @generateLogCallback _callback, 'start-device', device
     @stopDevice device, (error) =>
       return callback error if error?
 
@@ -89,10 +112,9 @@ class DeviceManager extends EventEmitter2
         @emit 'start', device
         callback()
 
-  installConnector : (connector, callback=->) =>
-    debug 'installConnector', connector
+  installConnector : (connector, _callback=->) =>
+    callback = @generateLogCallback _callback, 'install-connector', {connector: connector}
     return callback new Error('Invalid connector') if _.isEmpty connector
-
     connector = _.last connector?.split(':')
 
     if @connectorsInstalled[connector]
@@ -114,8 +136,8 @@ class DeviceManager extends EventEmitter2
       @connectorsInstalled[connector] = true
       callback()
 
-  setupDevice: (device, callback) =>
-    debug 'setupDevice', uuid: device.uuid, name: device.name
+  setupDevice: (device, _callback) =>
+    callback = @generateLogCallback _callback, 'setup-device', device
     return callback new Error('Invalid connector') if _.isEmpty device.connector
 
     devicePath = @getDevicePath device
@@ -134,7 +156,9 @@ class DeviceManager extends EventEmitter2
         debug 'done copying', devicePath
         callback()
 
-  writeMeshbluJSON: (devicePath, device, callback=->) =>
+  writeMeshbluJSON: (devicePath, device, _callback=->) =>
+    callback = @generateLogCallback _callback, 'write-meshblu-json', device
+
     meshbluFilename = path.join devicePath, 'meshblu.json'
     deviceConfig = _.extend {},
       device,
@@ -145,13 +169,14 @@ class DeviceManager extends EventEmitter2
     debug 'writing meshblu.json', devicePath
     fs.writeFile meshbluFilename, meshbluConfig, callback
 
-  shutdown: (callback=->) =>
+  shutdown: (_callback=->) =>
+    callback = @generateLogCallback _callback, 'shutdown'
     async.eachSeries _.keys(@deviceProcesses), (uuid, callback) =>
       @stopDevice uuid: uuid, callback
     , callback
 
-  stopDevice: (device, callback=->) =>
-    debug 'stopDevice', device.uuid
+  stopDevice: (device, _callback=->) =>
+    callback = @generateLogCallback _callback, 'stop-device', device
     deviceProcess = @deviceProcesses[device.uuid]
     return callback null, device.uuid unless deviceProcess?
 
@@ -165,7 +190,8 @@ class DeviceManager extends EventEmitter2
     delete @deviceProcesses[device.uuid]
     callback null, device.uuid
 
-  removeDeletedDeviceDirectory: (device, callback) =>
+  removeDeletedDeviceDirectory: (device, _callback) =>
+    callback = @generateLogCallback _callback, 'remove-delete-device-directory', device
     devicePath = @getDevicePath device
     fs.exists devicePath, (exists) =>
       return callback() unless exists

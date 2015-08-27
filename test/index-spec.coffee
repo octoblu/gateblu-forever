@@ -14,3 +14,6 @@ describe 'DeviceManager', ->
 
     it 'should call installConnector', ->
       expect(@sut.installConnector).to.have.been.calledWith 'meshblu:something'
+
+    it 'should do log things', ->
+      expect('not logging').to.equals('logging')
