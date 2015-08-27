@@ -18,18 +18,19 @@ class DeviceManager extends EventEmitter2
     @runningDevices = []
     @connectorsInstalled = {}
     @loggerUuid = process.env.GATEBLU_LOGGER_UUID || '4dd6d1a8-0d11-49aa-a9da-d2687e8f9caf'
+    @meshbluHttp = new MeshbluHttp @config
 
   sendLogMessage: (workflow, state, device, error) =>
-    # @meshbluConnection.message
-    #   devices: [ @loggerUuid ]
-    #   payload:
-    #     application: 'gateblu-forever'
-    #     gatebluUuid: @config?.uuid
-    #     deviceUuid: device?.uuid
-    #     connector: device?.connector
-    #     state: state
-    #     workflow: workflow
-    #     error: error
+    @meshbluHttp.message
+      devices: [ @loggerUuid ]
+      payload:
+        application: 'gateblu-forever'
+        gatebluUuid: @config?.uuid
+        deviceUuid: device?.uuid
+        connector: device?.connector
+        state: state
+        workflow: workflow
+        message: error?.message
 
   generateLogCallback : (callback=(->), workflow, device) =>
     debug workflow, device?.uuid, device?.name
