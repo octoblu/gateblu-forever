@@ -11,12 +11,14 @@ forever = require 'forever-monitor'
 MeshbluHttp = require 'meshblu-http'
 ConnectorManager = require './connector-manager'
 rimraf = require 'rimraf'
+Uuid = require 'node-uuid'
 
 class DeviceManager extends EventEmitter2
   constructor: (@config, dependencies={}) ->
     @deviceProcesses = {}
     @runningDevices = []
     @connectorsInstalled = {}
+    @deploymentUuids = {}
     @loggerUuid = process.env.GATEBLU_LOGGER_UUID || '4dd6d1a8-0d11-49aa-a9da-d2687e8f9caf'
     @meshbluHttp = new MeshbluHttp @config
 
@@ -25,6 +27,7 @@ class DeviceManager extends EventEmitter2
       devices: [ @loggerUuid ]
       payload:
         application: 'gateblu-forever'
+        deploymentUuid: @deploymentUuids[device?.uuid]
         gatebluUuid: @config?.uuid
         deviceUuid: device?.uuid
         connector: device?.connector
@@ -43,13 +46,15 @@ class DeviceManager extends EventEmitter2
       callback error
 
   addDevice: (device, _callback=->) =>
+    @deploymentUuids[device.uuid] = Uuid.v1()
     callback = @generateLogCallback _callback, 'add-device', device
     async.series [
-      async.apply @installConnector, device.connector
+      async.apply @installDeviceConnector, device
       async.apply @setupDevice, device
     ], callback
 
   removeDevice: (device, _callback=->) =>
+    @deploymentUuids[device.uuid] = Uuid.v1()
     callback = @generateLogCallback _callback, 'remove-device', device
     async.series [
       async.apply @stopDevice, device
@@ -113,13 +118,13 @@ class DeviceManager extends EventEmitter2
         @emit 'start', device
         callback()
 
-  installConnector : (connector, _callback=->) =>
-    callback = @generateLogCallback _callback, 'install-connector', {connector: connector}
-    return callback new Error('Invalid connector') if _.isEmpty connector
-    connector = _.last connector?.split(':')
+  installDeviceConnector : (device, _callback=->) =>
+    callback = @generateLogCallback _callback, 'install-connector', device
+    return callback new Error('Invalid connector') if _.isEmpty device.connector
+    connector = _.last device.connector?.split(':')
 
     if @connectorsInstalled[connector]
-      debug "installConnector: #{connector} already installed this session. skipping."
+      debug "installDeviceConnector: #{connector} already installed this session. skipping."
       return callback()
 
     if @config.skipInstall

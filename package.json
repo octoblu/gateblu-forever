@@ -1,6 +1,6 @@
 {
   "name": "gateblu-forever",
-  "version": "4.3.1",
+  "version": "4.4.0",
   "description": "",
   "main": "index.js",
   "bin": {
@@ -39,6 +39,7 @@
     "meshblu": "^1.30.0",
     "meshblu-config": "^2.0.0",
     "meshblu-http": "^3.4.1",
+    "node-uuid": "^1.4.3",
     "npm": "^2.13.0",
     "request": "^2.58.0",
     "rimraf": "^2.4.2",

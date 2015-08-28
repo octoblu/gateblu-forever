@@ -7,10 +7,11 @@ describe 'DeviceManager', ->
 
   describe 'addDevice', ->
     beforeEach ->
-      @sut.installConnector = sinon.stub().yields null
+      @sut.installDeviceConnector = sinon.stub().yields null
       @sut.setupDevice = sinon.stub().yields null
       @sut.startDevice = sinon.stub().yields null
-      @sut.addDevice uuid: '1234', connector: 'meshblu:something'
+      @device = uuid: '1234', connector: 'meshblu:something'
+      @sut.addDevice @device
 
-    it 'should call installConnector', ->
-      expect(@sut.installConnector).to.have.been.calledWith 'meshblu:something'
+    it 'should call installDeviceConnector', ->
+      expect(@sut.installDeviceConnector).to.have.been.calledWith @device
