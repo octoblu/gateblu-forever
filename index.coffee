@@ -92,14 +92,30 @@ class DeviceManager extends EventEmitter2
       child.on 'stderr', (data) =>
         debug 'stderr', device.uuid, data.toString()
         @emit 'stderr', data.toString(), device
+        @sendLogMessage 'spawn-child-process', 'stderr', device, {message:data.toString()}
 
       child.on 'stdout', (data) =>
         debug 'stdout', device.uuid, data.toString()
         @emit 'stdout', data.toString(), device
+        @sendLogMessage 'spawn-child-process', 'stdout', device, {message:data.toString()}
 
       child.on 'stop', =>
         debug "process for #{device.uuid} stopped."
         delete @deviceProcesses[device.uuid]
+        @sendLogMessage 'spawn-child-process', 'stop', device
+
+      child.on 'exit', =>
+        debug "process for #{device.uuid} stopped."
+        delete @deviceProcesses[device.uuid]
+        @sendLogMessage 'spawn-child-process', 'exit', device
+
+      child.on 'error', (err) =>
+        debug 'error', err
+        @sendLogMessage 'spawn-child-process', 'error', device, err
+
+      child.on 'exit:code', (code) =>
+        debug 'exit:code', code
+        @sendLogMessage 'spawn-child-process', 'exit-code', device, {message:code}
 
       debug 'forever', {uuid: device.uuid, name: device.name}, 'starting'
       child.start()
