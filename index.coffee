@@ -12,6 +12,7 @@ MeshbluHttp = require 'meshblu-http'
 ConnectorManager = require './connector-manager'
 rimraf = require 'rimraf'
 Uuid = require 'node-uuid'
+packageJSON = require './package.json'
 
 class DeviceManager extends EventEmitter2
   constructor: (@config, dependencies={}) ->
@@ -34,6 +35,8 @@ class DeviceManager extends EventEmitter2
         state: state
         workflow: workflow
         message: error?.message
+        platform: process.platform ? 'unknown'
+        gatebluVersion: packageJSON.version ? 'unknown'
 
   generateLogCallback : (callback=(->), workflow, device) =>
     debug workflow, device?.uuid, device?.name
@@ -49,6 +52,7 @@ class DeviceManager extends EventEmitter2
     @deploymentUuids[device.uuid] = Uuid.v1()
     callback = @generateLogCallback _callback, 'add-device', device
     async.series [
+      async.apply @stopDevice, device
       async.apply @installDeviceConnector, device
       async.apply @setupDevice, device
     ], callback
