@@ -25,7 +25,8 @@ class DeviceManager extends EventEmitter2
 
   sendLogMessage: (workflow, state, device, error) =>
     @meshbluHttp.message
-      devices: [ @loggerUuid ]
+      devices: [ @loggerUuid, @config.uuid ]
+      topic: 'gateblu_log'
       payload:
         application: 'gateblu-forever'
         deploymentUuid: @deploymentUuids[device?.uuid]
@@ -35,8 +36,8 @@ class DeviceManager extends EventEmitter2
         state: state
         workflow: workflow
         message: error?.message
-        platform: process.platform ? 'unknown'
-        gatebluVersion: packageJSON.version ? 'unknown'
+        platform: process.platform
+        gatebluVersion: packageJSON.version
 
   generateLogCallback : (callback=(->), workflow, device) =>
     debug workflow, device?.uuid, device?.name
