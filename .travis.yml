@@ -26,18 +26,18 @@ after_success:
   cp .installer/darwin/cache/GatebluService.pkg dpl_s3/${TRAVIS_TAG:-$TRAVIS_COMMIT};
   fi
 deploy:
-  - provider: s3
-    access_key_id: AKIAJH2D5IPIRHYJT5IA
-    secret_access_key:
-      secure: h7TbBN4AqHuHR4nVfLUqgp04WJ9gWRcSLMTYsVT0fjhlRJM/2mKEqUtNHvAiKxVl1roZAQTQ1QhOYeDucDByiOjktcQs5v6iTnaGWyLvsU0z2NR0XcyhnPDXPWn9SV7tUrwKJwcOFhM61xQ6COjUZqbDA0meYd96EWGjvVwCNqo=
-    bucket: gateblu
-    upload-dir: gateblu-service
-    region: us-west-2
-    skip_cleanup: true
-    local-dir: dpl_s3
-    on:
-      tags: true
-      all_branches: master
+- provider: s3
+  access_key_id: AKIAJH2D5IPIRHYJT5IA
+  secret_access_key:
+    secure: lKdRL6iXGHk9JZde8f2gzfZUtmsJB1QdT9W+x4FFWtcdtkZ66+nXc4VWbCzk6l5B42xgq63Lc0k31T/NZf9t2GJgoWPGFA5lNuDCR2/DBb5Yc+DywUiuVMEdUPqf2JRdg3QIzetgyVEZykqpcGOMhnCQTk9xGOGmKz+msbeLE9s=
+  bucket: gateblu
+  upload-dir: gateblu-service
+  region: us-west-2
+  skip_cleanup: true
+  local-dir: dpl_s3
+  on:
+    tags: true
+    all_branches: master
 addons:
   code_climate:
     repo_token: 95986ecafdc6a839cf3f7ad924918e1b652c53f28d9f49666bd614d128c6e227
