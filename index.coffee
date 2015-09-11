@@ -174,7 +174,7 @@ class DeviceManager extends EventEmitter2
     debug 'connectorPath', connectorPath
     debug 'copying files', devicePath
 
-    fs.remove devicePath, (error) =>
+    rimraf devicePath, (error) =>
       return callback error if error?
 
       fs.copy connectorPath, devicePath, (error) =>
@@ -222,6 +222,6 @@ class DeviceManager extends EventEmitter2
     devicePath = @getDevicePath device
     fs.exists devicePath, (exists) =>
       return callback() unless exists
-      fs.remove devicePath, callback
+      rimraf devicePath, callback
 
 module.exports = DeviceManager
