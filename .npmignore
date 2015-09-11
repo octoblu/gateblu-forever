@@ -31,3 +31,5 @@ tmp
 devices
 .npmrc
 *.sublime-workspace
+.installer/darwin/output
+.installer/darwin/cache
