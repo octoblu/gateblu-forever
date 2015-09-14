@@ -95,7 +95,7 @@ class GatebluCommand
     fs.writeFileSync CONFIG_PATH, JSON.stringify(options, true, 2)
 
   registerGateblu: (options, callback=->) =>
-    meshbluHttp = new MeshbluHttp {}
+    meshbluHttp = new MeshbluHttp options
     defaults =
       type: 'device:gateblu'
     properties = _.extend defaults, options
