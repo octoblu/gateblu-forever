@@ -38,6 +38,15 @@ deploy:
   on:
     tags: true
     all_branches: master
+- provider: npm
+  skip_cleanup: true
+  clean_up: false
+  email: serveradmin@octoblu.com
+  api_key:
+    secure: "JrtrtwcLrsQJWPfv0KIZVIcwUT7GkxnK5Xpe+vptEzcgtjCGw2IyUNJFK+vf+A2uoSn+qzVKtNhn8ygxXICw9ZKV+IycLrN+NjDrCcoCAOlPhZjOKqTWISWujIoo4HpNIvn+WxD5GiOXtjPxmu6IkWUzWRAj8iplqx3wzLYH5J0="
+  on:
+    tags: true
+    all_branches: master
 addons:
   code_climate:
     repo_token: 95986ecafdc6a839cf3f7ad924918e1b652c53f28d9f49666bd614d128c6e227
