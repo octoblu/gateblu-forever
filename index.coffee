@@ -1,18 +1,17 @@
 _ = require 'lodash'
-fs = require 'fs-extra'
 url = require 'url'
 path = require 'path'
 util = require 'util'
+Uuid = require 'node-uuid'
 async = require 'async'
 debug = require('debug')('gateblu-forever:device-manager')
+rimraf = require 'rimraf'
 {exec} = require 'child_process'
 forever = require 'forever-monitor'
-{EventEmitter2} = require 'eventemitter2'
-MeshbluHttp = require 'meshblu-http'
-ConnectorManager = require './connector-manager'
-rimraf = require 'rimraf'
-Uuid = require 'node-uuid'
 packageJSON = require './package.json'
+MeshbluHttp = require 'meshblu-http'
+{EventEmitter2} = require 'eventemitter2'
+ConnectorManager = require './connector-manager'
 
 class DeviceManager extends EventEmitter2
   constructor: (@config, dependencies={}) ->
@@ -63,68 +62,63 @@ class DeviceManager extends EventEmitter2
     callback = @generateLogCallback _callback, 'remove-device', device
     async.series [
       async.apply @stopDevice, device
-      async.apply @removeDeletedDeviceDirectory, device
     ], callback
 
-  getDevicePath: (device) =>
-    path.join @config.devicePath, device.uuid
+  getConnectorPath: (device) =>
+    return path.join @config.tmpPath, 'node_modules', device.connector
 
   spawnChildProcess: (device, _callback=->) =>
     callback = @generateLogCallback _callback, 'spawn-child-process', device
-    devicePath = @getDevicePath device
-    @writeMeshbluJSON devicePath, device, (error) =>
-      return callback error if error?
+    connectorPath = @getConnectorPath device
+    debugEnv = device?.env?.DEBUG
+    debugEnv ?= process.env.DEBUG
+    environment =
+      DEBUG: debugEnv
+      MESHBLU_UUID: device.uuid
+      MESHBLU_TOKEN: device.token
+      MESHBLU_SERVER: @config.server
+      MESHBLU_PORT: @config.port
+    foreverOptions =
+      max: 1
+      silent: true
+      args: []
+      env: environment
+      cwd: connectorPath
+      command: 'node'
+      checkFile: false
 
-      pathSep = ':'
-      pathSep = ';' if process.platform == 'win32'
+    child = new (forever.Monitor)('command.js', foreverOptions)
+    child.on 'stderr', (data) =>
+      debug 'stderr', device.uuid, data.toString()
+      @emit 'stderr', data.toString(), device
+      @sendLogMessage 'spawn-child-process', 'stderr', device, {message:data.toString()}
 
-      env =
-        'DEBUG' : process.env['DEBUG']
+    child.on 'stdout', (data) =>
+      debug 'stdout', device.uuid, data.toString()
+      @emit 'stdout', data.toString(), device
+      @sendLogMessage 'spawn-child-process', 'stdout', device, {message:data.toString()}
 
-      foreverOptions =
-        max: 1
-        silent: true
-        args: []
-        env: env
-        cwd: devicePath
-        logFile: path.join devicePath, 'forever.log'
-        outFile: path.join devicePath, 'forever.stdout'
-        errFile: path.join devicePath, 'forever.stderr'
-        command: 'node'
-        checkFile: false
+    child.on 'stop', =>
+      debug "process for #{device.uuid} stopped."
+      delete @deviceProcesses[device.uuid]
+      @sendLogMessage 'spawn-child-process', 'stop', device
 
-      child = new (forever.Monitor)('command.js', foreverOptions)
-      child.on 'stderr', (data) =>
-        debug 'stderr', device.uuid, data.toString()
-        @emit 'stderr', data.toString(), device
-        @sendLogMessage 'spawn-child-process', 'stderr', device, {message:data.toString()}
+    child.on 'exit', =>
+      debug "process for #{device.uuid} stopped."
+      delete @deviceProcesses[device.uuid]
+      @sendLogMessage 'spawn-child-process', 'exit', device
 
-      child.on 'stdout', (data) =>
-        debug 'stdout', device.uuid, data.toString()
-        @emit 'stdout', data.toString(), device
-        @sendLogMessage 'spawn-child-process', 'stdout', device, {message:data.toString()}
+    child.on 'error', (err) =>
+      debug 'error', err
+      @sendLogMessage 'spawn-child-process', 'error', device, err
 
-      child.on 'stop', =>
-        debug "process for #{device.uuid} stopped."
-        delete @deviceProcesses[device.uuid]
-        @sendLogMessage 'spawn-child-process', 'stop', device
+    child.on 'exit:code', (code) =>
+      debug 'exit:code', code
+      @sendLogMessage 'spawn-child-process', 'exit-code', device, {message:code}
 
-      child.on 'exit', =>
-        debug "process for #{device.uuid} stopped."
-        delete @deviceProcesses[device.uuid]
-        @sendLogMessage 'spawn-child-process', 'exit', device
-
-      child.on 'error', (err) =>
-        debug 'error', err
-        @sendLogMessage 'spawn-child-process', 'error', device, err
-
-      child.on 'exit:code', (code) =>
-        debug 'exit:code', code
-        @sendLogMessage 'spawn-child-process', 'exit-code', device, {message:code}
-
-      debug 'forever', {uuid: device.uuid, name: device.name}, 'starting'
-      child.start()
-      callback null, child
+    debug 'forever', {uuid: device.uuid, name: device.name}, 'starting'
+    child.start()
+    callback null, child
 
   startDevice : (device, _callback=->) =>
     callback = @generateLogCallback _callback, 'start-device', device
@@ -155,9 +149,10 @@ class DeviceManager extends EventEmitter2
     connectorManager = new ConnectorManager @config.tmpPath, connector
     connectorManager.install (error) =>
       if error?
-        debug 'install error', 'doing rimraf on', @config.tmpPath, '/node_modules/', connector
-        rimraf @config.tmpPath + '/node_modules/' + connector, (error) =>
-          debug 'unable to delete tmpPath!', error
+        connectorPath = @getConnectorPath device
+        debug 'install error', 'doing rimraf on', connectorPath
+        rimraf connectorPath, (error) =>
+          debug 'unable to delete tmpPath!', error if error
         return callback error
       debug 'connector installed', connector
       @connectorsInstalled[connector] = true
@@ -166,35 +161,7 @@ class DeviceManager extends EventEmitter2
   setupDevice: (device, _callback) =>
     callback = @generateLogCallback _callback, 'setup-device', device
     return callback new Error('Invalid connector') if _.isEmpty device.connector
-
-    devicePath = @getDevicePath device
-    connectorPath = path.join @config.tmpPath, 'node_modules', device.connector
-
-    debug 'path', devicePath
-    debug 'connectorPath', connectorPath
-    debug 'copying files', devicePath
-
-    rimraf devicePath, (error) =>
-      return callback error if error?
-
-      fs.copy connectorPath, devicePath, (error) =>
-        return callback error if error?
-
-        debug 'done copying', devicePath
-        callback()
-
-  writeMeshbluJSON: (devicePath, device, _callback=->) =>
-    callback = @generateLogCallback _callback, 'write-meshblu-json', device
-
-    meshbluFilename = path.join devicePath, 'meshblu.json'
-    deviceConfig = _.extend {},
-      device,
-      server: @config.server, port: @config.port
-
-    deviceConfig = _.pick deviceConfig, 'uuid', 'token', 'server', 'port'
-    meshbluConfig = JSON.stringify deviceConfig, null, 2
-    debug 'writing meshblu.json', devicePath
-    fs.writeFile meshbluFilename, meshbluConfig, callback
+    callback()
 
   shutdown: (_callback=->) =>
     callback = @generateLogCallback _callback, 'shutdown'
@@ -216,12 +183,5 @@ class DeviceManager extends EventEmitter2
     debug "process for #{device.uuid} wasn't running. Removing record."
     delete @deviceProcesses[device.uuid]
     callback null, device.uuid
-
-  removeDeletedDeviceDirectory: (device, _callback) =>
-    callback = @generateLogCallback _callback, 'remove-delete-device-directory', device
-    devicePath = @getDevicePath device
-    fs.exists devicePath, (exists) =>
-      return callback() unless exists
-      rimraf devicePath, callback
 
 module.exports = DeviceManager
