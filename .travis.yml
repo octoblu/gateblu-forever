@@ -3,6 +3,13 @@ language: shell
 os:
 - linux
 - osx
+addons:
+  code_climate:
+    repo_token: 95986ecafdc6a839cf3f7ad924918e1b652c53f28d9f49666bd614d128c6e227
+before_script:
+- if [ "$TRAVIS_OS_NAME" == "linux" ]; then npm install -g codeclimate-test-reporter; fi
+after_script:
+- if [ "$TRAVIS_OS_NAME" == "linux" ]; codeclimate-test-reporter < coverage/lcov.info; fi
 cache:
   bundler: true
   directories:
@@ -47,11 +54,6 @@ deploy:
   on:
     tags: true
     all_branches: true
-addons:
-  code_climate:
-    repo_token: 95986ecafdc6a839cf3f7ad924918e1b652c53f28d9f49666bd614d128c6e227
-after_script:
-- cat coverage/lcov.info | codeclimate
 env:
   global:
     secure: N6cxPy+LiLrHpSnbZnSlR5EIlDEDI0++aVZln9YBOi55SNFf9pP8Aqa4PkkKgWSbO8RRgQRBndzuDZ+uU8zxuhv2T55OUh0M9/oR9LhQAv4xGNryBvo3pjhCO3G213M8lBsEoD8bfHeBTgyBdld3Y2N/XzSeSzPPlbR3YMbltX0=

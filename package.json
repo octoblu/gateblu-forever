@@ -9,7 +9,7 @@
   "scripts": {
     "preinstall": "node -e \"try{require('crossyio-unpack/preinstall');}catch(e){}\"",
     "start": "node command.js",
-    "test": "./node_modules/.bin/istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly -- -R spec"
+    "test": "istanbul cover _mocha -- -R spec"
   },
   "repository": {
     "type": "git",
@@ -51,12 +51,13 @@
   "devDependencies": {
     "chai": "^1.10.0",
     "codeclimate-test-reporter": "^0.0.4",
-    "coffee-script": "^1.8.0",
-    "istanbul": "^0.3.5",
-    "mocha": "^2.1.0",
+    "coffee-coverage": "^0.6.3",
+    "coffee-script": "^1.10.0",
+    "istanbul": "^0.3.21",
+    "mocha": "^2.3.3",
     "mocha-istanbul": "^0.2.0",
-    "sinon": "^1.12.2",
-    "sinon-chai": "^2.6.0"
+    "sinon": "^1.17.0",
+    "sinon-chai": "^2.8.0"
   },
   "bundledDependencies": [
     "crossyio-unpack"
