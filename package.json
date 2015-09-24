@@ -1,6 +1,6 @@
 {
   "name": "gateblu-forever",
-  "version": "4.1.1",
+  "version": "5.0.1",
   "description": "",
   "main": "index.js",
   "bin": {
@@ -33,15 +33,16 @@
     "forever-monitor": "^1.5.2",
     "fs-extra": "^0.18.4",
     "fstream": "^1.0.7",
-    "gateblu": "^5.1.0",
+    "gateblu": "^5.5.4",
     "homedir": "^0.6.0",
     "lodash": "^3.9.3",
     "meshblu": "^1.30.0",
     "meshblu-config": "^2.0.0",
-    "meshblu-http": "^2.0.1",
+    "meshblu-http": "^3.4.1",
+    "node-uuid": "^1.4.3",
     "npm": "^2.13.0",
     "request": "^2.58.0",
-    "rimraf": "^2.3.4",
+    "rimraf": "^2.4.2",
     "semver-compare": "^1.0.0",
     "tar": "^2.1.1"
   },

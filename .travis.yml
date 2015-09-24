@@ -17,6 +17,8 @@ cache:
 matrix:
   allow_failures:
   - os: osx
+before_install:
+- npm install npm -g
 install:
 - if [ "$TRAVIS_OS_NAME" == "osx" ]; then brew install nvm; fi
 - if [ "$TRAVIS_OS_NAME" == "osx" ]; then source $(brew --prefix nvm)/nvm.sh; fi
@@ -36,7 +38,7 @@ deploy:
 - provider: s3
   access_key_id: AKIAJH2D5IPIRHYJT5IA
   secret_access_key:
-    secure: kbKVia41I8HQRL8HUUlKCzGhHlCLpTGFKrC4ePouT7oygN9L3LTaC45RkVe74QN0P8EeVIIqY/bE8+PUBL0OalFFg7K3hNkwaUe+QDsfvKpb584JZJe+xULk2SBRJ9kIh85j3YOoch9bFKgrGKwwhXLMy5Ujp/aU6aaFi3mZIyU=
+    secure: lKdRL6iXGHk9JZde8f2gzfZUtmsJB1QdT9W+x4FFWtcdtkZ66+nXc4VWbCzk6l5B42xgq63Lc0k31T/NZf9t2GJgoWPGFA5lNuDCR2/DBb5Yc+DywUiuVMEdUPqf2JRdg3QIzetgyVEZykqpcGOMhnCQTk9xGOGmKz+msbeLE9s=
   bucket: gateblu
   upload-dir: gateblu-service
   region: us-west-2
@@ -44,16 +46,16 @@ deploy:
   local-dir: dpl_s3
   on:
     tags: true
-    all_branches: true
+    all_branches: master
 - provider: npm
   skip_cleanup: true
   clean_up: false
   email: serveradmin@octoblu.com
   api_key:
-    secure: U617xKK4QrU98MMzDmAZrlhV0vqcH3mbJvZPYJGoYCbm/PAaA5NtBbaNd+CH0jP1EDItzk2vpjQw2o8tYBh1l1qGSDtOnRARR9AYZShwVdACbItuFvAn+MzMMKPcal2CnKOt6h4YWQuc4O9TDTL/K53jxRknW3EdhQ1TMkMv0NA=
+    secure: "JrtrtwcLrsQJWPfv0KIZVIcwUT7GkxnK5Xpe+vptEzcgtjCGw2IyUNJFK+vf+A2uoSn+qzVKtNhn8ygxXICw9ZKV+IycLrN+NjDrCcoCAOlPhZjOKqTWISWujIoo4HpNIvn+WxD5GiOXtjPxmu6IkWUzWRAj8iplqx3wzLYH5J0="
   on:
     tags: true
-    all_branches: true
+    branches: true
 env:
   global:
     secure: N6cxPy+LiLrHpSnbZnSlR5EIlDEDI0++aVZln9YBOi55SNFf9pP8Aqa4PkkKgWSbO8RRgQRBndzuDZ+uU8zxuhv2T55OUh0M9/oR9LhQAv4xGNryBvo3pjhCO3G213M8lBsEoD8bfHeBTgyBdld3Y2N/XzSeSzPPlbR3YMbltX0=

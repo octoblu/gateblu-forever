@@ -6,6 +6,7 @@ colors = require 'colors'
 Gateblu = require 'gateblu'
 homedir = require 'homedir'
 commander = require 'commander'
+MeshbluHttp = require 'meshblu-http'
 DeviceManager = require './index'
 MeshbluConfig = require 'meshblu-config'
 
@@ -15,6 +16,8 @@ DEFAULT_OPTIONS =
   nodePath: process.env.GATEBLU_NODE_PATH ? ''
   devicePath: process.env.GATEBLU_DEVICE_PATH ? './devices'
   tmpPath: process.env.GATEBLU_TMP_PATH ? './tmp'
+  server: process.env.GATEBLU_SERVER ? 'meshblu.octoblu.com'
+  port: process.env.GATEBLU_PORT ? 443
 
 class GatebluCommand
   getOptions: =>
@@ -34,6 +37,21 @@ class GatebluCommand
     options = @getOptions()
     debug 'Starting Device Manager with options', options
     @deviceManager = new DeviceManager options
+    return @start options if options.uuid
+    @registerGateblu options, (error, newOptions) =>
+      return console.error error if error?
+      @writeMeshbluJSON newOptions, (error) =>
+        return console.error error if error?
+        @start newOptions
+
+  writeMeshbluJSON: (options, callback=->)=>
+    deviceConfig = _.clone options
+    meshbluConfig = JSON.stringify deviceConfig, null, 2
+    debug 'writing gateblu meshblu.json', deviceConfig
+    fs.writeFile CONFIG_PATH, meshbluConfig, callback
+
+  start: (options) =>
+    debug 'starting gateblu'
     @gateblu = new Gateblu options, @deviceManager
 
     @deviceManager.on 'error', (error) =>
@@ -75,6 +93,18 @@ class GatebluCommand
     debug 'saveOptions', '\n', options
     fs.mkdirpSync path.dirname(CONFIG_PATH)
     fs.writeFileSync CONFIG_PATH, JSON.stringify(options, true, 2)
+
+  registerGateblu: (options, callback=->) =>
+    meshbluHttp = new MeshbluHttp options
+    defaults =
+      type: 'device:gateblu'
+    properties = _.extend defaults, options
+    debug 'registering gateblu', properties
+    meshbluHttp.register properties, (error, device) =>
+      debug 'registered gateblu', error
+      return callback error if error?
+      deviceProperties = _.omit device, ['geo', 'ipAddress', 'meshblu', 'online']
+      callback null, deviceProperties
 
 gatebluCommand = new GatebluCommand
 gatebluCommand.run()
