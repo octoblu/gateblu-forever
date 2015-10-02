@@ -37,7 +37,7 @@ class GatebluCommand
     options = @getOptions()
     debug 'Starting Device Manager with options', options
     @deviceManager = new DeviceManager options
-    return @start options if options.uuid
+    return @updateAndStart options if options.uuid
     @registerGateblu options, (error, newOptions) =>
       return console.error error if error?
       @writeMeshbluJSON newOptions, (error) =>
@@ -49,6 +49,14 @@ class GatebluCommand
     meshbluConfig = JSON.stringify deviceConfig, null, 2
     debug 'writing gateblu meshblu.json', deviceConfig
     fs.writeFile CONFIG_PATH, meshbluConfig, callback
+
+  updateAndStart: (options) =>
+    meshbluHttp = new MeshbluHttp options
+    properties = {}
+    properties.platform = process.platform
+    meshbluHttp.update options.uuid, properties, (error) =>
+      return console.error error if error?
+      @start options
 
   start: (options) =>
     debug 'starting gateblu'
@@ -98,6 +106,7 @@ class GatebluCommand
     meshbluHttp = new MeshbluHttp options
     defaults =
       type: 'device:gateblu'
+      platform: process.platform
     properties = _.extend defaults, options
     debug 'registering gateblu', properties
     meshbluHttp.register properties, (error, device) =>
