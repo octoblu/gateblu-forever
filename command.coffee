@@ -5,7 +5,6 @@ debug = require('debug')('gateblu:command')
 colors = require 'colors'
 Gateblu = require 'gateblu'
 homedir = require 'homedir'
-Readline = require 'readline'
 commander = require 'commander'
 MeshbluHttp = require 'meshblu-http'
 DeviceManager = require './index'
@@ -66,11 +65,6 @@ class GatebluCommand
     @deviceManager.once 'error', @die
     @gateblu.once 'error', @die
     process.once 'exit', @die
-
-    if process.platform == 'win32'
-      rl = Readline.createInterface input: process.stdin, output: process.stdout
-      rl.on "SIGINT", =>
-        process.emit 'SIGINT'
 
     process.once 'SIGINT', =>
       console.log colors.cyan '[SIGINT] Gracefully cleaning up...'
