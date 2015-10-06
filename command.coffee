@@ -5,6 +5,7 @@ debug = require('debug')('gateblu:command')
 colors = require 'colors'
 Gateblu = require 'gateblu'
 homedir = require 'homedir'
+Readline = require 'readline'
 commander = require 'commander'
 MeshbluHttp = require 'meshblu-http'
 DeviceManager = require './index'
@@ -62,22 +63,28 @@ class GatebluCommand
     debug 'starting gateblu'
     @gateblu = new Gateblu options, @deviceManager
 
-    @deviceManager.on 'error', (error) =>
-      @die error if error?
+    @deviceManager.once 'error', @die
+    @gateblu.once 'error', @die
+    process.once 'exit', @die
 
-    @gateblu.on 'error', (error) =>
-      @die error if error?
+    if process.platform == 'win32'
+      rl = Readline.createInterface input: process.stdin, output: process.stdout
+      rl.on "SIGINT", =>
+        process.emit 'SIGINT'
 
-    process.on 'exit', (error) =>
-      @die error if error?
-
-    process.on 'SIGINT', =>
-      debug 'SIGINT'
+    process.once 'SIGINT', =>
+      console.log colors.cyan '[SIGINT] Gracefully cleaning up...'
       process.stdin.resume()
       @deviceManager.shutdown =>
         process.exit 0
 
-    process.on 'uncaughtException', (error) =>
+    process.once 'SIGTERM', =>
+      console.log colors.cyan '[SIGTERM] Gracefully cleaning up...'
+      process.stdin.resume()
+      @deviceManager.shutdown =>
+        process.exit 0
+
+    process.once 'uncaughtException', (error) =>
       @die error
 
   parseOptions: =>
@@ -89,12 +96,12 @@ class GatebluCommand
     @skipInstall = commander.skipInstall ? (process.env.GATEBLU_SKIP_INSTALL?.toLocaleLowerCase() == 'true')
 
   die: (error) =>
+    console.error colors.magenta 'Gateblu is now shutting down...'
     @deviceManager.shutdown =>
-      if 'Error' == typeof error
+      if _.isError error
         console.error colors.red error.message
         console.error error.stack
-      else
-        console.error colors.red arguments...
+      console.error colors.red 'Gateblu shutdown'
       process.exit 1
 
   saveOptions: (options) ->
