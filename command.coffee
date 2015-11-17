@@ -37,7 +37,7 @@ class GatebluCommand
     options = @getOptions()
     debug 'Starting Device Manager with options', options
     @deviceManager = new DeviceManager options
-    return @start options if options.uuid
+    return @updateAndStart options if options.uuid
     @registerGateblu options, (error, newOptions) =>
       return console.error error if error?
       @writeMeshbluJSON newOptions, (error) =>
@@ -50,26 +50,35 @@ class GatebluCommand
     debug 'writing gateblu meshblu.json', deviceConfig
     fs.writeFile CONFIG_PATH, meshbluConfig, callback
 
+  updateAndStart: (options) =>
+    meshbluHttp = new MeshbluHttp options
+    properties = {}
+    properties.platform = process.platform
+    meshbluHttp.update options.uuid, properties, (error) =>
+      return console.error error if error?
+      @start options
+
   start: (options) =>
     debug 'starting gateblu'
     @gateblu = new Gateblu options, @deviceManager
 
-    @deviceManager.on 'error', (error) =>
-      @die error if error?
+    @deviceManager.once 'error', @die
+    @gateblu.once 'error', @die
+    process.once 'exit', @die
 
-    @gateblu.on 'error', (error) =>
-      @die error if error?
-
-    process.on 'exit', (error) =>
-      @die error if error?
-
-    process.on 'SIGINT', =>
-      debug 'SIGINT'
+    process.once 'SIGINT', =>
+      console.log colors.cyan '[SIGINT] Gracefully cleaning up...'
       process.stdin.resume()
       @deviceManager.shutdown =>
         process.exit 0
 
-    process.on 'uncaughtException', (error) =>
+    process.once 'SIGTERM', =>
+      console.log colors.cyan '[SIGTERM] Gracefully cleaning up...'
+      process.stdin.resume()
+      @deviceManager.shutdown =>
+        process.exit 0
+
+    process.once 'uncaughtException', (error) =>
       @die error
 
   parseOptions: =>
@@ -81,12 +90,12 @@ class GatebluCommand
     @skipInstall = commander.skipInstall ? (process.env.GATEBLU_SKIP_INSTALL?.toLocaleLowerCase() == 'true')
 
   die: (error) =>
+    console.error colors.magenta 'Gateblu is now shutting down...'
     @deviceManager.shutdown =>
-      if 'Error' == typeof error
+      if _.isError error
         console.error colors.red error.message
         console.error error.stack
-      else
-        console.error colors.red arguments...
+      console.error colors.red 'Gateblu shutdown'
       process.exit 1
 
   saveOptions: (options) ->
@@ -98,6 +107,7 @@ class GatebluCommand
     meshbluHttp = new MeshbluHttp options
     defaults =
       type: 'device:gateblu'
+      platform: process.platform
     properties = _.extend defaults, options
     debug 'registering gateblu', properties
     meshbluHttp.register properties, (error, device) =>

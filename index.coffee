@@ -39,7 +39,7 @@ class DeviceManager extends EventEmitter2
         gatebluVersion: packageJSON.version
 
   generateLogCallback : (callback=(->), workflow, device) =>
-    debug workflow, device?.uuid, device?.name
+    debug workflow, uuid: device?.uuid, name: device?.name
     @sendLogMessage workflow, 'begin', device
     return (error) =>
       if error?
