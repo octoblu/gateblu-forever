@@ -37,6 +37,8 @@ class DeviceManager extends EventEmitter2
         message: error?.message
         platform: process.platform
         gatebluVersion: packageJSON.version
+    , (error) =>
+      console.error error.stack
 
   generateLogCallback : (callback=(->), workflow, device) =>
     debug workflow, uuid: device?.uuid, name: device?.name

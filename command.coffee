@@ -79,6 +79,7 @@ class GatebluCommand
         process.exit 0
 
     process.once 'uncaughtException', (error) =>
+      console.error 'Uncaught Exception'
       @die error
 
   parseOptions: =>
@@ -95,6 +96,8 @@ class GatebluCommand
       if _.isError error
         console.error colors.red error.message
         console.error error.stack
+      else
+        console.error error
       console.error colors.red 'Gateblu shutdown'
       process.exit 1
 
