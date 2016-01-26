@@ -46,7 +46,7 @@ class DeviceManager extends EventEmitter2
         @sendLogMessage workflow, 'error', device, error
       else
         @sendLogMessage workflow, 'end', device
-      callback error
+      callback()
 
   addDevice: (device, _callback=->) =>
     @deploymentUuids[device.uuid] = Uuid.v1()

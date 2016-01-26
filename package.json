@@ -1,6 +1,6 @@
 {
   "name": "gateblu-forever",
-  "version": "5.0.7",
+  "version": "5.0.8",
   "description": "",
   "main": "index.js",
   "bin": {
