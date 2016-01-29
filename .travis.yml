@@ -17,12 +17,11 @@ cache:
 matrix:
   allow_failures:
   - os: osx
-before_install:
-- npm install npm -g
 install:
 - if [ "$TRAVIS_OS_NAME" == "osx" ]; then brew install nvm; fi
 - if [ "$TRAVIS_OS_NAME" == "osx" ]; then source $(brew --prefix nvm)/nvm.sh; fi
 - nvm install v0.10
+- npm install npm -g
 - npm install
 script:
 - if [ "$TRAVIS_OS_NAME" != "osx" ]; then npm test; fi
