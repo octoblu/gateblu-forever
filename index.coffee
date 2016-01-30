@@ -38,10 +38,11 @@ class DeviceManager extends EventEmitter2
         platform: process.platform
         gatebluVersion: packageJSON.version
     , (error) =>
-      console.error error.stack
+      console.error error.stack if error?.stack?
 
   generateLogCallback : (callback=(->), workflow, device) =>
-    debug workflow, uuid: device?.uuid, name: device?.name
+    debug workflow, uuid: device.uuid, name: device.name if device?
+    debug workflow unless device?
     @sendLogMessage workflow, 'begin', device
     return (error) =>
       if error?
@@ -81,6 +82,7 @@ class DeviceManager extends EventEmitter2
       MESHBLU_SERVER: @config.server
       MESHBLU_PORT: @config.port
     foreverOptions =
+      uid: device.uuid
       max: 1
       silent: true
       args: []
@@ -88,6 +90,7 @@ class DeviceManager extends EventEmitter2
       cwd: connectorPath
       command: 'node'
       checkFile: false
+      killTree: true
 
     child = new (forever.Monitor)('command.js', foreverOptions)
     child.on 'stderr', (data) =>

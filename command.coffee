@@ -106,6 +106,7 @@ class GatebluCommand
 
     unless @deviceManager?
       @consoleError error
+      console.error colors.red 'Gateblu shutdown'
       process.exit 1
 
     @deviceManager.shutdown =>
@@ -114,11 +115,11 @@ class GatebluCommand
       process.exit 1
 
   consoleError: (error) =>
-    if _.isError error
-      console.error colors.red error.message
-      console.error error.stack
-    else
-      console.error error
+    return unless error
+    return console.error error unless _.isError error
+
+    console.error colors.red error.message
+    console.error error.stack
 
 gatebluCommand = new GatebluCommand
 gatebluCommand.run()
