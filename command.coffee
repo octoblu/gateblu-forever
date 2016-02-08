@@ -81,8 +81,12 @@ class GatebluCommand
     @deviceManager = new DeviceManager @options
     @gateblu = new Gateblu @options, @deviceManager
 
-    @deviceManager.once 'error', @die
-    @gateblu.once 'error', @die
+    @deviceManager.on 'error', (error) =>
+      console.error 'Error on Device Manager', error
+
+    @gateblu.on 'error', (error) =>
+      console.error 'Error on gateblu', error
+
     process.once 'exit', @die
 
     process.once 'SIGINT', =>
