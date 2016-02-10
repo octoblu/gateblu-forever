@@ -53,6 +53,7 @@ identity="A5D9EE988CEFE25C6D04679D00F9C8C60B63C240"
 
 echo "### signing package"
 
+codesign --force --verify --verbose --keychain ~/Library/Keychains/mac-build.keychain --sign "$identity" "$CACHE_DIR/GatebluServiceCore.pkg"
 codesign --force --verify --verbose --keychain ~/Library/Keychains/mac-build.keychain --sign "$identity" "$CACHE_DIR/GatebluService.pkg"
 
 echo "### verifying signature"
