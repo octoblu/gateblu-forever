@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
 <installer-gui-script minSpecVersion="2">
-    <pkg-ref id="com.octoblu.GatebluService"/>
+    <pkg-ref id="com.octoblu.GatebluService.pkg"/>
     <pkg-ref id="com.octoblu.GatebluService.nodejs.pkg"/>
     <pkg-ref id="com.octoblu.GatebluService.node.npm.pkg"/>
     <options customize="never" require-scripts="false"/>
@@ -11,16 +11,16 @@
     </volume-check>
     <choices-outline>
         <line choice="default">
-            <line choice="com.octoblu.GatebluService"/>
+            <line choice="com.octoblu.GatebluService.pkg"/>
             <line choice="com.octoblu.GatebluService.nodejs.pkg"/>
             <line choice="com.octoblu.GatebluService.node.npm.pkg"/>
         </line>
     </choices-outline>
     <choice id="default"/>
-    <choice id="com.octoblu.GatebluService" visible="false">
-        <pkg-ref id="com.octoblu.GatebluService"/>
+    <choice id="com.octoblu.GatebluService.pkg" visible="false">
+        <pkg-ref id="com.octoblu.GatebluService.pkg"/>
     </choice>
-    <pkg-ref id="com.octoblu.GatebluService" version="1.0" onConclusion="none">GatebluServiceCore.pkg</pkg-ref>
+    <pkg-ref id="com.octoblu.GatebluService.pkg" version="1.0" onConclusion="none">GatebluServiceCore.pkg</pkg-ref>
     <choice id="com.octoblu.GatebluService.nodejs.pkg" visible="false">
         <pkg-ref id="com.octoblu.GatebluService.nodejs.pkg"/>
     </choice>

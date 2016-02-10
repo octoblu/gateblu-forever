@@ -29,8 +29,8 @@ script:
 after_success:
 - mkdir -p dpl_s3
 - if [ "$TRAVIS_OS_NAME" == "osx" ]; then .installer/darwin/build; fi
-- if [ "$TRAVIS_OS_NAME" == "osx" ]; then mkdir -p dpl_s3/latest; cp .installer/darwin/cache/GatebluService.pkg dpl_s3/latest; fi
-- if [ "$TRAVIS_OS_NAME" == "osx" ]; then mkdir -p dpl_s3/${TRAVIS_TAG:-$TRAVIS_COMMIT}; cp .installer/darwin/cache/GatebluService.pkg dpl_s3/${TRAVIS_TAG:-$TRAVIS_COMMIT}; fi
+- if [ "$TRAVIS_OS_NAME" == "osx" ]; then mkdir -p dpl_s3/latest; cp .installer/darwin/cache/GatebluService* dpl_s3/latest; fi
+- if [ "$TRAVIS_OS_NAME" == "osx" ]; then mkdir -p dpl_s3/${TRAVIS_TAG:-$TRAVIS_COMMIT}; cp .installer/darwin/cache/GatebluService* dpl_s3/${TRAVIS_TAG:-$TRAVIS_COMMIT}; fi
 deploy:
 - provider: s3
   access_key_id: AKIAJH2D5IPIRHYJT5IA

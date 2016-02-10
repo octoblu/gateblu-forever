@@ -42,17 +42,14 @@ pkgbuild --root . \
   --ownership recommended \
   --install-location "/Library/Octoblu/GatebluService" \
   --scripts $INSTALLER_DIR/Scripts \
-  $CACHE_DIR/dmg/GatebluServiceCore.pkg
+  $CACHE_DIR/GatebluServiceCore.pkg
 
 productbuild --distribution $INSTALLER_DIR/distribution.plist \
   --resources $INSTALLER_DIR  \
   --package-path $CACHE_DIR \
-  $CACHE_DIR/dmg/GatebluService.pkg
+  $CACHE_DIR/GatebluService.pkg
 
-pkgutil --expand GatebluService.pkg GatebluService
-pkgutil --flatten GatebluService/GatebluServiceCore.pkg GatebluServiceCore.pkg
-pkgutil --flatten GatebluService/node.pkg node.pkg
-pkgutil --flatten GatebluService/npm.pkg npm.pkg
+cp $CACHE_DIR/GatebluService.pkg $CACHE_DIR/dmg
 
 echo "### create keychain"
 security create-keychain -p travis mac-build.keychain
@@ -63,12 +60,12 @@ identity="A5D9EE988CEFE25C6D04679D00F9C8C60B63C240"
 
 echo "### signing package"
 
-codesign --force --verify --verbose --keychain ~/Library/Keychains/mac-build.keychain --sign "$identity" "$CACHE_DIR/dmg/GatebluServiceCore.pkg"
-codesign --force --verify --verbose --keychain ~/Library/Keychains/mac-build.keychain --sign "$identity" "$CACHE_DIR/dmg/GatebluService.pkg"
+codesign --force --verify --verbose --keychain ~/Library/Keychains/mac-build.keychain --sign "$identity" "$CACHE_DIR/GatebluServiceCore.pkg"
+codesign --force --verify --verbose --keychain ~/Library/Keychains/mac-build.keychain --sign "$identity" "$CACHE_DIR/GatebluService.pkg"
 
 echo "### verifying signature"
-codesign -vvv -d "$CACHE_DIR/dmg/GatebluServiceCore.pkg"
-codesign -vvv -d "$CACHE_DIR/dmg/GatebluService.pkg"
+codesign -vvv -d "$CACHE_DIR/GatebluServiceCore.pkg"
+codesign -vvv -d "$CACHE_DIR/GatebluService.pkg"
 # sudo spctl -a -vvvv "$PLATFORM_APP_DIR"
 
 echo "### building dmg"
