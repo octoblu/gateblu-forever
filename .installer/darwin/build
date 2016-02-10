@@ -35,6 +35,9 @@ pushd $OUTPUT_DIR
 npm install -s --production
 sudo chown -R root:wheel $OUTPUT_DIR
 
+identity="A5D9EE988CEFE25C6D04679D00F9C8C60B63C240"
+identity_name="Developer ID Installer: Octoblu Inc. (JLSZ8Q5945)"
+
 pkgbuild --root . \
   --identifier com.octoblu.GatebluService \
   --version 1.0 \
@@ -44,24 +47,26 @@ pkgbuild --root . \
   --scripts $INSTALLER_DIR/Scripts \
   $CACHE_DIR/GatebluServiceCore.pkg
 
-productbuild --distribution $INSTALLER_DIR/distribution.plist \
-  --resources $INSTALLER_DIR  \
-  --package-path $CACHE_DIR \
-  $CACHE_DIR/GatebluService.pkg
-
-cp $CACHE_DIR/GatebluService.pkg $CACHE_DIR/dmg
-
 echo "### create keychain"
 security create-keychain -p travis mac-build.keychain
 security import $INSTALLER_DIR/certs/apple.cer -k ~/Library/Keychains/mac-build.keychain -T /usr/bin/codesign
 security import $INSTALLER_DIR/certs/dist.p12 -k ~/Library/Keychains/mac-build.keychain -P $KEY_PASSWORD -T /usr/bin/codesign
-
-identity="A5D9EE988CEFE25C6D04679D00F9C8C60B63C240"
-
+security import $INSTALLER_DIR/certs/installer.p12 -k ~/Library/Keychains/mac-build.keychain -P $KEY_PASSWORD -T /usr/bin/codesign -T /usr/bin/productbuild
 echo "### signing package"
 
 codesign --force --verify --verbose --keychain ~/Library/Keychains/mac-build.keychain --sign "$identity" "$CACHE_DIR/GatebluServiceCore.pkg"
 codesign --force --verify --verbose --keychain ~/Library/Keychains/mac-build.keychain --sign "$identity" "$CACHE_DIR/GatebluService.pkg"
+
+echo "### building installer"
+
+productbuild --distribution $INSTALLER_DIR/distribution.plist \
+  --resources $INSTALLER_DIR  \
+  --package-path $CACHE_DIR \
+  --keychain ~/Library/Keychains/mac-build.keychain \
+  --sign "$identity_name" \
+  $CACHE_DIR/GatebluService.pkg
+
+cp $CACHE_DIR/GatebluService.pkg $CACHE_DIR/dmg
 
 echo "### verifying signature"
 codesign -vvv -d "$CACHE_DIR/GatebluServiceCore.pkg"
