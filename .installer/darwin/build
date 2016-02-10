@@ -1,8 +1,10 @@
-#!/bin/sh
+#!/bin/bash
+
 ROOT_DIR=$PWD
 INSTALLER_DIR=$ROOT_DIR/.installer/darwin
 CACHE_DIR=$INSTALLER_DIR/cache
 OUTPUT_DIR=$INSTALLER_DIR/output
+ASSETS_DIR=$INSTALLER_DIR/assets
 
 mkdir -p $CACHE_DIR
 
@@ -23,6 +25,9 @@ if [ ! -f $CACHE_DIR/npm.pkg ]; then
   popd
 fi
 
+rm -rf $CACHE_DIR/dmg
+mkdir -p $CACHE_DIR/dmg
+
 sudo rm -rf $OUTPUT_DIR
 rsync -avq --exclude='node_modules' --exclude='meshblu.json' --exclude='test' --exclude='.git' --exclude='.installer' $ROOT_DIR/ $OUTPUT_DIR
 cp $INSTALLER_DIR/com.octoblu.GatebluService.plist $INSTALLER_DIR/start-gateblu-service $OUTPUT_DIR
@@ -37,12 +42,17 @@ pkgbuild --root . \
   --ownership recommended \
   --install-location "/Library/Octoblu/GatebluService" \
   --scripts $INSTALLER_DIR/Scripts \
-  $CACHE_DIR/GatebluServiceCore.pkg
+  $CACHE_DIR/dmg/GatebluServiceCore.pkg
 
 productbuild --distribution $INSTALLER_DIR/distribution.plist \
-  --resources $INSTALLER_DIR \
+  --resources $INSTALLER_DIR  \
   --package-path $CACHE_DIR \
-  $CACHE_DIR/GatebluService.pkg
+  $CACHE_DIR/dmg/GatebluService.pkg
+
+pkgutil --expand GatebluService.pkg GatebluService
+pkgutil --flatten GatebluService/GatebluServiceCore.pkg GatebluServiceCore.pkg
+pkgutil --flatten GatebluService/node.pkg node.pkg
+pkgutil --flatten GatebluService/npm.pkg npm.pkg
 
 echo "### create keychain"
 security create-keychain -p travis mac-build.keychain
@@ -53,12 +63,27 @@ identity="A5D9EE988CEFE25C6D04679D00F9C8C60B63C240"
 
 echo "### signing package"
 
-codesign --force --verify --verbose --keychain ~/Library/Keychains/mac-build.keychain --sign "$identity" "$CACHE_DIR/GatebluServiceCore.pkg"
-codesign --force --verify --verbose --keychain ~/Library/Keychains/mac-build.keychain --sign "$identity" "$CACHE_DIR/GatebluService.pkg"
+codesign --force --verify --verbose --keychain ~/Library/Keychains/mac-build.keychain --sign "$identity" "$CACHE_DIR/dmg/GatebluServiceCore.pkg"
+codesign --force --verify --verbose --keychain ~/Library/Keychains/mac-build.keychain --sign "$identity" "$CACHE_DIR/dmg/GatebluService.pkg"
 
 echo "### verifying signature"
-codesign -vvv -d "$CACHE_DIR/GatebluService.pkg"
+codesign -vvv -d "$CACHE_DIR/dmg/GatebluServiceCore.pkg"
+codesign -vvv -d "$CACHE_DIR/dmg/GatebluService.pkg"
 # sudo spctl -a -vvvv "$PLATFORM_APP_DIR"
+
+echo "### building dmg"
+umount /Volumes/GatebluService > /dev/null 2>&1
+
+pushd $CACHE_DIR
+$INSTALLER_DIR/create-dmg --volname GatebluService \
+  --volicon $ASSETS_DIR/gateblu-disk-image.icns \
+  --background $ASSETS_DIR/background.png \
+  --window-size 512 320 \
+  --icon-size 128 \
+  --icon GatebluService.pkg 256 200 \
+  --hide-extension GatebluService.pkg \
+  $CACHE_DIR/GatebluService.dmg \
+  $CACHE_DIR/dmg
 
 echo "### remove keychain"
 security delete-keychain mac-build.keychain
