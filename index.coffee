@@ -1,4 +1,5 @@
 _ = require 'lodash'
+fs = require 'fs'
 url = require 'url'
 path = require 'path'
 util = require 'util'
@@ -10,17 +11,18 @@ rimraf = require 'rimraf'
 forever = require 'forever-monitor'
 packageJSON = require './package.json'
 MeshbluHttp = require 'meshblu-http'
+ProcessManager = require './process-manager'
 {EventEmitter2} = require 'eventemitter2'
 ConnectorManager = require './connector-manager'
 
 class DeviceManager extends EventEmitter2
   constructor: (@config, dependencies={}) ->
-    @deviceProcesses = {}
     @runningDevices = []
     @connectorsInstalled = {}
     @deploymentUuids = {}
     @loggerUuid = process.env.GATEBLU_LOGGER_UUID || '4dd6d1a8-0d11-49aa-a9da-d2687e8f9caf'
     @meshbluHttp = new MeshbluHttp @config
+    @processManager = new ProcessManager {tmpPath: @config.tmpPath}
 
   sendLogMessage: (workflow, state, device, error) =>
     @meshbluHttp.message
@@ -71,59 +73,62 @@ class DeviceManager extends EventEmitter2
     return path.join @config.tmpPath, 'node_modules', device.connector
 
   spawnChildProcess: (device, _callback=->) =>
-    callback = @generateLogCallback _callback, 'spawn-child-process', device
-    connectorPath = @getConnectorPath device
-    debugEnv = device?.env?.DEBUG
-    debugEnv ?= process.env.DEBUG
-    environment =
-      DEBUG: debugEnv
-      MESHBLU_UUID: device.uuid
-      MESHBLU_TOKEN: device.token
-      MESHBLU_SERVER: @config.server
-      MESHBLU_PORT: @config.port
-    foreverOptions =
-      uid: device.uuid
-      max: 1
-      silent: true
-      args: []
-      env: environment
-      cwd: connectorPath
-      command: 'node'
-      checkFile: false
-      killTree: true
+    debug 'spawning child process'
+    @processManager.kill device, =>
+      callback = @generateLogCallback _callback, 'spawn-child-process', device
+      connectorPath = @getConnectorPath device
+      debugEnv = device?.env?.DEBUG
+      debugEnv ?= process.env.DEBUG
+      environment =
+        DEBUG: debugEnv
+        MESHBLU_UUID: device.uuid
+        MESHBLU_TOKEN: device.token
+        MESHBLU_SERVER: @config.server
+        MESHBLU_PORT: @config.port
+      foreverOptions =
+        uid: device.uuid
+        max: 1
+        silent: true
+        args: []
+        env: environment
+        cwd: connectorPath
+        command: 'node'
+        checkFile: false
+        killTree: true
 
-    child = new (forever.Monitor)('command.js', foreverOptions)
-    child.on 'stderr', (data) =>
-      debug 'stderr', device.uuid, data.toString()
-      @emit 'stderr', data.toString(), device
-      @sendLogMessage 'spawn-child-process', 'stderr', device, {message:data.toString()}
+      child = new (forever.Monitor)('command.js', foreverOptions)
+      child.on 'stderr', (data) =>
+        debug 'stderr', device.uuid, data.toString()
+        @emit 'stderr', data.toString(), device
+        @sendLogMessage 'spawn-child-process', 'stderr', device, {message:data.toString()}
 
-    child.on 'stdout', (data) =>
-      debug 'stdout', device.uuid, data.toString()
-      @emit 'stdout', data.toString(), device
-      @sendLogMessage 'spawn-child-process', 'stdout', device, {message:data.toString()}
+      child.on 'stdout', (data) =>
+        debug 'stdout', device.uuid, data.toString()
+        @emit 'stdout', data.toString(), device
+        @sendLogMessage 'spawn-child-process', 'stdout', device, {message:data.toString()}
 
-    child.on 'stop', =>
-      debug "process for #{device.uuid} stopped."
-      delete @deviceProcesses[device.uuid]
-      @sendLogMessage 'spawn-child-process', 'stop', device
+      child.on 'stop', =>
+        debug "process for #{device.uuid} stopped."
+        @processManager.clear device
+        @sendLogMessage 'spawn-child-process', 'stop', device
 
-    child.on 'exit', =>
-      debug "process for #{device.uuid} stopped."
-      delete @deviceProcesses[device.uuid]
-      @sendLogMessage 'spawn-child-process', 'exit', device
+      child.on 'exit', =>
+        debug "process for #{device.uuid} stopped."
+        @processManager.clear device
+        @sendLogMessage 'spawn-child-process', 'exit', device
 
-    child.on 'error', (err) =>
-      debug 'error', err
-      @sendLogMessage 'spawn-child-process', 'error', device, err
+      child.on 'error', (err) =>
+        debug 'error', err
+        @sendLogMessage 'spawn-child-process', 'error', device, err
 
-    child.on 'exit:code', (code) =>
-      debug 'exit:code', code
-      @sendLogMessage 'spawn-child-process', 'exit-code', device, {message:code}
+      child.on 'exit:code', (code) =>
+        debug 'exit:code', code
+        @sendLogMessage 'spawn-child-process', 'exit-code', device, {message:code}
 
-    debug 'forever', {uuid: device.uuid, name: device.name}, 'starting'
-    child.start()
-    callback null, child
+      debug 'forever', {uuid: device.uuid, name: device.name}, 'starting'
+      child.start()
+      @processManager.write device, _.get child, 'child.pid'
+      callback null, child
 
   startDevice : (device, _callback=->) =>
     callback = @generateLogCallback _callback, 'start-device', device
@@ -134,7 +139,6 @@ class DeviceManager extends EventEmitter2
       @spawnChildProcess device, (error, child) =>
         return callback error if error?
 
-        @deviceProcesses[device.uuid] = child
         @emit 'start', device
         callback()
 
@@ -170,23 +174,10 @@ class DeviceManager extends EventEmitter2
 
   shutdown: (_callback=->) =>
     callback = @generateLogCallback _callback, 'shutdown'
-    async.eachSeries _.keys(@deviceProcesses), (uuid, callback) =>
-      @stopDevice uuid: uuid, callback
-    , callback
+    @processManager.killAll callback
 
   stopDevice: (device, _callback=->) =>
     callback = @generateLogCallback _callback, 'stop-device', device
-    deviceProcess = @deviceProcesses[device.uuid]
-    return callback null, device.uuid unless deviceProcess?
-
-    if deviceProcess.running
-      debug 'killing process for', device.uuid
-      deviceProcess.killSignal = 'SIGINT'
-      deviceProcess.stop()
-      return callback null, device.uuid
-
-    debug "process for #{device.uuid} wasn't running. Removing record."
-    delete @deviceProcesses[device.uuid]
-    callback null, device.uuid
+    @processManager.kill device, callback
 
 module.exports = DeviceManager
