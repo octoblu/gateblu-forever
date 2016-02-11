@@ -22,7 +22,9 @@ class DeviceManager extends EventEmitter2
     @deploymentUuids = {}
     @loggerUuid = process.env.GATEBLU_LOGGER_UUID || '4dd6d1a8-0d11-49aa-a9da-d2687e8f9caf'
     @meshbluHttp = new MeshbluHttp @config
-    @processManager = new ProcessManager {tmpPath: @config.tmpPath}
+    tmpPath = @config.tmpPath
+    tmpPath ?= './tmp'
+    @processManager = new ProcessManager {tmpPath}
 
   sendLogMessage: (workflow, state, device, error) =>
     @meshbluHttp.message
