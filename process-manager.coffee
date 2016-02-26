@@ -1,22 +1,28 @@
 fs      = require 'fs-extra'
 path    = require 'path'
-forever = require 'forever-monitor'
 async   = require 'async'
+forever = require 'forever-monitor'
 debug   = require('debug')('gateblu-forever:process-manager')
+
+PIDS_DIR='pids'
 
 class ProcessManager
   constructor: ({@tmpPath}) ->
     fs.mkdirsSync @getPath()
 
   getPath: (device) =>
-    return path.join @tmpPath, 'pids', device.uuid if device?
-    path.join @tmpPath, 'pids'
+    return path.join @tmpPath, PIDS_DIR, device.uuid if device?
+    path.join @tmpPath, PIDS_DIR
 
   exists: (device) =>
     fs.existsSync @getPath device
 
   get: (device) =>
-    fs.readFileSync @getPath device if @exists device
+    pid = fs.readFileSync(@getPath device).toString() if @exists device
+    debug 'got pid', {pid: pid, uuid: device.uuid}
+    return unless pid?
+    pid = parseInt pid
+    return pid
 
   write: (device, pid) =>
     debug 'writing process file', uuid: device.uuid, pid: pid
@@ -24,13 +30,15 @@ class ProcessManager
     fs.writeFileSync @getPath(device), pid
 
   clear: (device) =>
-    debug 'clearing process file', uuid: device.uuid
-    fs.unlinkSync @getPath device if @exists device
+    filePath = @getPath device
+    debug 'clearing process file', uuid: device.uuid, filePath:filePath
+    fs.unlinkSync filePath if @exists device
+    debug 'cleared process file', !@exists device
 
   isRunning: (device) =>
+    debug 'check is running'
     pid = @get device
     unless pid?
-      @clear device
       return false
     running = forever.checkProcess pid
     debug 'process is running', running
@@ -41,8 +49,9 @@ class ProcessManager
     fs.walk @getPath()
       .on 'data', (item) =>
         uuid = path.basename item.path
+        debug 'got item search for process', uuid: uuid
         return unless uuid?
-        return if uuid = 'pids'
+        return if uuid == PIDS_DIR
         items.push
           uuid: uuid
       .on 'end', =>

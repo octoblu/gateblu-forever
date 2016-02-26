@@ -81,12 +81,14 @@ class DeviceManager extends EventEmitter2
       connectorPath = @getConnectorPath device
       debugEnv = device?.env?.DEBUG
       debugEnv ?= process.env.DEBUG
+
       environment =
         DEBUG: debugEnv
         MESHBLU_UUID: device.uuid
         MESHBLU_TOKEN: device.token
         MESHBLU_SERVER: @config.server
         MESHBLU_PORT: @config.port
+
       foreverOptions =
         uid: device.uuid
         max: 1

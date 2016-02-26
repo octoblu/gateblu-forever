@@ -7,7 +7,7 @@ Gateblu = require 'gateblu'
 homedir = require 'homedir'
 commander = require 'commander'
 MeshbluHttp = require 'meshblu-http'
-DeviceManager = require './index'
+DeviceManager = require './device-manager'
 MeshbluConfig = require 'meshblu-config'
 
 CONFIG_PATH = process.env.MESHBLU_JSON_FILE ? './meshblu.json'
@@ -58,7 +58,7 @@ class GatebluCommand
       return console.error error if error?
       @start()
 
-  saveOptions: () ->
+  saveOptions: =>
     debug 'saveOptions', @options
     fs.mkdirpSync path.dirname(CONFIG_PATH)
     fs.writeFileSync CONFIG_PATH, JSON.stringify(@options, true, 2)
@@ -102,7 +102,7 @@ class GatebluCommand
         process.exit 0
 
     process.once 'uncaughtException', (error) =>
-      console.error 'Uncaught Exception'
+      console.error 'Uncaught Exception', error
       @die error
 
   die: (error) =>
