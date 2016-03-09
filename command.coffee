@@ -13,7 +13,6 @@ MeshbluConfig = require 'meshblu-config'
 CONFIG_PATH = process.env.MESHBLU_JSON_FILE ? './meshblu.json'
 DEFAULT_OPTIONS =
   nodePath: process.env.GATEBLU_NODE_PATH ? ''
-  devicePath: process.env.GATEBLU_DEVICE_PATH ? './devices'
   tmpPath: process.env.GATEBLU_TMP_PATH ? './tmp'
   server: process.env.GATEBLU_SERVER ? 'meshblu.octoblu.com'
   port: process.env.GATEBLU_PORT ? 443
