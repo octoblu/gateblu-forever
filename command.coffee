@@ -101,6 +101,7 @@ class GatebluCommand
         process.exit 0
 
     process.once 'uncaughtException', (error) =>
+      return if error?.type == 'TransportError'
       console.error 'Uncaught Exception', error
       @die error
 
