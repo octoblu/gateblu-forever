@@ -4,18 +4,22 @@ path = require 'path'
 debug = require('debug')('gateblu:command')
 colors = require 'colors'
 Gateblu = require 'gateblu'
+fixPath = require './fix-path'
 homedir = require 'homedir'
 commander = require 'commander'
 MeshbluHttp = require 'meshblu-http'
 DeviceManager = require './device-manager'
 MeshbluConfig = require 'meshblu-config'
 
-CONFIG_PATH = process.env.MESHBLU_JSON_FILE ? './meshblu.json'
+CONFIG_PATH = fixPath(process.env.MESHBLU_JSON_FILE ? './meshblu.json')
+
 DEFAULT_OPTIONS =
-  nodePath: process.env.GATEBLU_NODE_PATH ? ''
-  tmpPath: process.env.GATEBLU_TMP_PATH ? './tmp'
   server: process.env.GATEBLU_SERVER ? 'meshblu.octoblu.com'
   port: process.env.GATEBLU_PORT ? 443
+
+REQUIRED_OPTIONS =
+  nodePath: process.env.GATEBLU_NODE_PATH ? ''
+  tmpPath: fixPath(process.env.GATEBLU_TMP_PATH ? './tmp')
 
 class GatebluCommand
   parseOptions: =>
@@ -27,13 +31,13 @@ class GatebluCommand
     @skipInstall = commander.skipInstall ? (process.env.GATEBLU_SKIP_INSTALL?.toLocaleLowerCase() == 'true')
 
   getOptions: =>
-    options = _.clone DEFAULT_OPTIONS
+    options = _.extend {}, DEFAULT_OPTIONS, REQUIRED_OPTIONS
     options.skipInstall = @skipInstall
     return options unless fs.existsSync CONFIG_PATH
 
     try
       meshbluJSON = require CONFIG_PATH
-      options = _.defaults meshbluJSON, options
+      options = _.extend {}, DEFAULT_OPTIONS, meshbluJSON, REQUIRED_OPTIONS
     catch error
       @die 'Invalid Meshblu JSON'
 
