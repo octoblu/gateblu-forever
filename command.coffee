@@ -46,7 +46,7 @@ class GatebluCommand
   run: =>
     @parseOptions()
     @options = @getOptions()
-    debug 'Starting Device Manager with options', @options
+    console.log colors.green('Starting Gateblu'), @options
     return @updateAndStart() if @options.uuid and @options.token
     @registerGateblu (error) =>
       return console.error error if error?
@@ -80,7 +80,6 @@ class GatebluCommand
       callback null
 
   start: =>
-    debug 'starting gateblu'
     @deviceManager = new DeviceManager @options
     @gateblu = new Gateblu @options, @deviceManager
 
@@ -90,7 +89,8 @@ class GatebluCommand
     @gateblu.on 'error', (error) =>
       console.error 'Error on gateblu', error
 
-    process.once 'exit', @die
+    process.once 'exit', (code) =>
+      console.error 'Exiting with code', code
 
     process.once 'SIGINT', =>
       console.log colors.cyan '[SIGINT] Gracefully cleaning up...'
@@ -106,7 +106,7 @@ class GatebluCommand
 
     process.once 'uncaughtException', (error) =>
       return if error?.type == 'TransportError'
-      console.error 'Uncaught Exception', error
+      console.error 'Uncaught Exception', error.stack
       @die error
 
   die: (error) =>

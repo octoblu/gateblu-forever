@@ -3,60 +3,31 @@ fs = require 'fs'
 url = require 'url'
 path = require 'path'
 util = require 'util'
-Uuid = require 'node-uuid'
 async = require 'async'
-debug = require('debug')('gateblu-forever:device-manager')
 rimraf = require 'rimraf'
-{exec} = require 'child_process'
 forever = require 'forever-monitor'
 packageJSON = require './package.json'
 MeshbluHttp = require 'meshblu-http'
 ProcessManager = require './process-manager'
 {EventEmitter2} = require 'eventemitter2'
 ConnectorManager = require './connector-manager'
+debug = require('debug')('gateblu-forever:device-manager')
 
 class DeviceManager extends EventEmitter2
   constructor: (@config, dependencies={}) ->
     @runningDevices = []
     @connectorsInstalled = {}
-    @deploymentUuids = {}
-    @loggerUuid = process.env.GATEBLU_LOGGER_UUID || '4dd6d1a8-0d11-49aa-a9da-d2687e8f9caf'
     @meshbluHttp = new MeshbluHttp @config
-    tmpPath = @config.tmpPath
-    tmpPath ?= './tmp'
+    {tmpPath} = @config
     @processManager = new ProcessManager {tmpPath}
-
-  sendLogMessage: (workflow, state, device, error) =>
-    @meshbluHttp.message
-      devices: [ @loggerUuid, @config.uuid ]
-      topic: 'gateblu_log'
-      payload:
-        application: 'gateblu-forever'
-        deploymentUuid: @deploymentUuids[device?.uuid]
-        gatebluUuid: @config?.uuid
-        deviceUuid: device?.uuid
-        connector: device?.connector
-        state: state
-        workflow: workflow
-        message: error?.message
-        platform: process.platform
-        gatebluVersion: packageJSON.version
-    , (error) =>
-      console.error error.stack if error?.stack?
 
   generateLogCallback : (callback=(->), workflow, device) =>
     debug workflow, uuid: device.uuid, name: device.name if device?
     debug workflow unless device?
-    @sendLogMessage workflow, 'begin', device
     return (error) =>
-      if error?
-        @sendLogMessage workflow, 'error', device, error
-      else
-        @sendLogMessage workflow, 'end', device
       callback()
 
   addDevice: (device, _callback=->) =>
-    @deploymentUuids[device.uuid] = Uuid.v1()
     callback = @generateLogCallback _callback, 'add-device', device
     async.series [
       async.apply @stopDevice, device
@@ -65,7 +36,6 @@ class DeviceManager extends EventEmitter2
     ], callback
 
   removeDevice: (device, _callback=->) =>
-    @deploymentUuids[device.uuid] = Uuid.v1()
     callback = @generateLogCallback _callback, 'remove-device', device
     async.series [
       async.apply @stopDevice, device
@@ -104,30 +74,24 @@ class DeviceManager extends EventEmitter2
       child.on 'stderr', (data) =>
         debug 'stderr', device.uuid, data.toString()
         @emit 'stderr', data.toString(), device
-        @sendLogMessage 'spawn-child-process', 'stderr', device, {message:data.toString()}
 
       child.on 'stdout', (data) =>
         debug 'stdout', device.uuid, data.toString()
         @emit 'stdout', data.toString(), device
-        @sendLogMessage 'spawn-child-process', 'stdout', device, {message:data.toString()}
 
       child.on 'stop', =>
         debug "process for #{device.uuid} stopped."
         @processManager.clear device
-        @sendLogMessage 'spawn-child-process', 'stop', device
 
       child.on 'exit', =>
         debug "process for #{device.uuid} stopped."
         @processManager.clear device
-        @sendLogMessage 'spawn-child-process', 'exit', device
 
-      child.on 'error', (err) =>
-        debug 'error', err
-        @sendLogMessage 'spawn-child-process', 'error', device, err
+      child.on 'error', (error) =>
+        debug 'error', error
 
       child.on 'exit:code', (code) =>
         debug 'exit:code', code
-        @sendLogMessage 'spawn-child-process', 'exit-code', device, {message:code}
 
       debug 'forever', {uuid: device.uuid, name: device.name}, 'starting'
       child.start()
