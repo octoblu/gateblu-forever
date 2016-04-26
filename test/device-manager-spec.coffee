@@ -3,7 +3,7 @@ DeviceManager = require '../index'
 
 describe 'DeviceManager', ->
   beforeEach ->
-    @sut = new DeviceManager {}
+    @sut = new DeviceManager {tmpPath: './tmp'}
 
   describe 'addDevice', ->
     beforeEach (done) ->
