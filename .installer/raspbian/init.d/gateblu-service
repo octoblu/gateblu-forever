@@ -11,15 +11,16 @@
 # Description:       Connect devices to Octoblu
 ### END INIT INFO
 
-export GATEBLU_DIR=/home/pi/gateblu-service
-export MESHBLU_JSON_FILE=$GATEBLU_DIR/meshblu.json
+export GATEBLU_DIR="/home/pi/gateblu-service"
+export GATEBLU_TMP_PATH="$GATEBLU_DIR/tmp"
+export MESHBLU_JSON_FILE="$GATEBLU_DIR/meshblu.json"
 export DEBUG=meshblu*,gateblu*
 
 case "$1" in
     start)
         echo "Starting gateblu-service"
         /bin/su pi -c "mkdir -p $GATEBLU_DIR"
-        if [ /boot/meshblu.json -nt $MESHBLU_JSON_FILE ]; then
+        if [ /boot/meshblu.json -nt "$MESHBLU_JSON_FILE" ]; then
           echo "Copying meshblu.json from /boot"
           if [ -f $MESHBLU_JSON_FILE ]; then
             /bin/su pi -c "cp -rfp $MESHBLU_JSON_FILE $MESHBLU_JSON_FILE.$(date +%F_%R)"
